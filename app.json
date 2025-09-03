@@ -2,6 +2,14 @@
   "expo": {
     "name": "hyperverge_task",
     "slug": "hyperverge_task",
+    "extra": {
+      "appwriteEndpoint": "https://fra.cloud.appwrite.io/v1",
+      "appwriteProjectId": "661bda5207e04c0926ea",
+      "appwriteDatabaseId": "68b749070002ddbb0dc2",
+      "appwriteProfilesCollectionId": "profiles",
+      "appwriteKycCollectionId": "kyc_requests",
+      "appwriteBucketId": "kyc_uploads"
+    },
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -33,7 +41,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-sqlite"
     ],
     "experiments": {
       "typedRoutes": true
