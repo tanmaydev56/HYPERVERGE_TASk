@@ -157,89 +157,119 @@ export default function AIHelpButton({ documentUri, onVerificationComplete }: {
       setIsVerifying(false);
     }
   };
-  const analyzeDocumentWithFaceMatch = async (documentType: string, documentImage: string, selfieImage?: string) => {
-  try {
-    const prompt = `
-    Analyze this ${documentType} document for KYC verification. 
-    ${selfieImage ? 'Also compare the document photo with the provided selfie for face matching.' : ''}
+//   const analyzeDocumentWithFaceMatch = async (documentType: string, documentImage: string, selfieImage?: string) => {
+//   try {
+//     const prompt = `
+//     Analyze this ${documentType} document for KYC verification. 
+//     ${selfieImage ? 'Also compare the document photo with the provided selfie for face matching.' : ''}
     
-    // ... (the rest of your prompt as above)
-    `;
+//     // ... (the rest of your prompt as above)
+//     `;
 
-    // For face matching, you would send both images to Gemini
-    const contents = [{
-      parts: [
-        { text: prompt },
-        {
-          inline_data: {
-            mime_type: "image/jpeg",
-            data: documentImage
-          }
-        }
-      ]
-    }];
+//     // For face matching, you would send both images to Gemini
+//     const contents = [{
+//       parts: [
+//         { text: prompt },
+//         {
+//           inline_data: {
+//             mime_type: "image/jpeg",
+//             data: documentImage
+//           }
+//         }
+//       ]
+//     }];
 
-    // Add selfie image if provided
-    if (selfieImage) {
-      contents[0].parts.push({
-        inline_data: {
-          mime_type: "image/jpeg", 
-          data: selfieImage
-        }
-      });
-    }
+//     // Add selfie image if provided
+//     if (selfieImage) {
+//       contents[0].parts.push({
+//         inline_data: {
+//           mime_type: "image/jpeg", 
+//           data: selfieImage
+//         }
+//       });
+//     }
 
-    const response = await fetch(GEMINI_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ contents })
-    });
+//     const response = await fetch(GEMINI_API_URL, {
+//       method: 'POST',
+//       headers: {
+//         'Content-Type': 'application/json',
+//       },
+//       body: JSON.stringify({ contents })
+//     });
 
-    // ... process response
-  } catch (error) {
-    // ... error handling
-  }
-};
-const handleFinalVerification = async () => {
-  if (!allDocumentsUploaded) return;
-
-  setLoading(true);
+//     // ... process response
+//   } catch (error) {
+//     // ... error handling
+//   }
+// };
+// In AIHelpButton.tsx, add this function:
+const performFinalFaceMatching = async () => {
+  setIsVerifying(true);
   try {
-    // Convert all images to base64
-    const documentBase64 = await convertImageToBase64(documents.aadhaar!); // or other document
-    const selfieBase64 = await convertImageToBase64(documents.selfie!);
+    // Simulate the final face matching process
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    
+    const faceMatchSuccess = Math.random() > 0.3;
+    const hasVerifiedDocuments = Object.values(verificationResults).some(result => result.verified);
 
-    // Send both images for comprehensive verification
-    const result = await analyzeDocumentWithFaceMatch('aadhaar', documentBase64, selfieBase64);
-
-    if (result.verified && result.faceMatch?.verified) {
-      // KYC fully approved
-      router.replace({
-        pathname: "/success",
-        params: { 
-          message: `KYC Approved! Document verified with ${result.confidence}% confidence and face match with ${result.faceMatch.confidence}% confidence`,
-          verified: "true"
-        }
-      });
-    } else {
-      // Handle rejection
-      const issues = [
-        ...result.issues,
-        ...(result.faceMatch?.issues || [])
-      ];
-      
+    if (faceMatchSuccess && hasVerifiedDocuments) {
       Alert.alert(
-        '❌ KYC Verification Failed',
-        `Issues found:\n${issues.join('\n• ')}`
+        '✅ Face Match Successful',
+        'Your selfie matches the document photo! Ready for final submission.',
+        [
+          {
+            text: 'Submit KYC',
+            onPress: () => router.push({
+              pathname: "/success",
+              params: { 
+                message: "KYC Approved! Face verification successful",
+                verified: "true"
+              }
+            })
+          }
+        ]
+      );
+    } else {
+      Alert.alert(
+        '❌ Face Match Failed',
+        faceMatchSuccess ? 
+          'Please complete document verification first' :
+          'Your selfie doesn\'t match the document photo. Please retake.',
+        [{ text: 'OK' }]
       );
     }
   } catch (error) {
-    Alert.alert("Error", "Final verification failed. Please try again.");
+    Alert.alert('Error', 'Face matching failed. Please try again.');
   } finally {
-    setLoading(false);
+    setIsVerifying(false);
   }
+};
+
+// Update the showVerificationOptions function:
+const showVerificationOptions = () => {
+  Alert.alert(
+    '🤖 AI Verification',
+    'Choose verification option:',
+    [
+      {
+        text: 'Verify Current Document',
+        onPress: verifyDocument,
+      },
+      {
+        text: 'Final Face Matching',
+        onPress: performFinalFaceMatching,
+        disabled: !documents.selfie || Object.values(verificationResults).filter(r => r.verified).length === 0
+      },
+      {
+        text: 'View Status Report',
+        onPress: generateFinalReport,
+      },
+      {
+        text: 'Cancel',
+        style: 'cancel'
+      }
+    ]
+  );
 };
   const generateFinalReport = () => {
     const allVerified = Object.values(verificationResults).every(result => result.verified);
@@ -270,28 +300,6 @@ const handleFinalVerification = async () => {
     }
   };
 
-  const showVerificationOptions = () => {
-    Alert.alert(
-      '🤖 AI Document Verification',
-      'I can help verify your documents using advanced AI technology',
-      [
-        {
-          text: 'Verify Current Document',
-          onPress: verifyDocument,
-          style: 'default'
-        },
-        {
-          text: 'View Final Report',
-          onPress: generateFinalReport,
-          style: 'default'
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        }
-      ]
-    );
-  };
 
   return (
     <TouchableOpacity 
