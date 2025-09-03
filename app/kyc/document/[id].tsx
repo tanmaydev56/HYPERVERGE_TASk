@@ -333,7 +333,19 @@ const performFinalFaceMatching = async (): Promise<{
       className="bg-green-500 rounded-full h-2"   // <- green fill
       style={{ width: progressFillWidth }}
     />
+      </View>
+      {/* // Add this to your document collection screen, near the progress bar */}
+{isLastStep && documents.selfie && (
+  <View className="items-center mt-4">
+    <Text className="text-white text-sm mb-2">Face Matching Ready</Text>
+    <TouchableOpacity 
+      onPress={performFinalFaceMatching}
+      className="bg-green-500 px-4 py-2 rounded-full"
+    >
+      <Text className="text-white text-sm">Verify Face Match</Text>
+    </TouchableOpacity>
   </View>
+)}
       </View>
 
       <ScrollView className="flex-1 px-6 pt-6">
