@@ -22,7 +22,7 @@ export default function SuccessScreen() {
         await sound.playAsync();
       } catch (error) {
         console.log('Error playing sound:', error);
-        // Fallback: Use system text-to-speech if needed
+        
       }
     };
 
