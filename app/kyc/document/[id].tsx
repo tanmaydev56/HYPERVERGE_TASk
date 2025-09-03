@@ -269,8 +269,7 @@ const performFinalFaceMatching = async (): Promise<{
     const faceMatchSuccess = Math.random() > 0.3; // 70% success rate
     const documentSuccess = verificationResults.aadhaar?.verified || 
                            verificationResults.pan?.verified || 
-                           verificationResults.dl?.verified || 
-                           verificationResults.voterid?.verified;
+                           verificationResults.dl?.verified 
 
     if (faceMatchSuccess && documentSuccess) {
       return {
@@ -334,18 +333,7 @@ const performFinalFaceMatching = async (): Promise<{
       style={{ width: progressFillWidth }}
     />
       </View>
-      {/* // Add this to your document collection screen, near the progress bar */}
-{isLastStep && documents.selfie && (
-  <View className="items-center mt-4">
-    <Text className="text-white text-sm mb-2">Face Matching Ready</Text>
-    <TouchableOpacity 
-      onPress={performFinalFaceMatching}
-      className="bg-green-500 px-4 py-2 rounded-full"
-    >
-      <Text className="text-white text-sm">Verify Face Match</Text>
-    </TouchableOpacity>
-  </View>
-)}
+      
       </View>
 
       <ScrollView className="flex-1 px-6 pt-6">

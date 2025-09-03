@@ -47,10 +47,7 @@ export default function MethodSelectionScreen() {
             <CheckCircle size={20} color="#22C55E" />
             <Text className="ml-3 text-gray-700">Driving License</Text>
           </View>
-          <View className="flex-row items-center">
-            <CheckCircle size={20} color="#22C55E" />
-            <Text className="ml-3 text-gray-700">Voter ID Card</Text>
-          </View>
+         
           <View className="flex-row items-center">
             <CheckCircle size={20} color="#22C55E" />
             <Text className="ml-3 text-gray-700">Your Selfie Photo</Text>

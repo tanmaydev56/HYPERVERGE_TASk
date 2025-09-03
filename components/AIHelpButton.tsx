@@ -10,7 +10,7 @@ const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/
 
 const analyzeDocumentWithGemini = async (documentType: string, imageBase64: string) => {
   try {
- const prompt = `
+   const prompt = `
 Analyze this ${documentType} document for KYC verification. Be reasonable but thorough.
 
 REALISTIC CHECKS FOR INDIAN DOCUMENTS:
@@ -34,19 +34,11 @@ Be strict with:
 - Completely wrong number formats
 - Inconsistent country references
 
-FACE MATCHING VERIFICATION (When both document photo and selfie are provided):
-1. Compare the facial features from the document photo with the selfie
-2. Check for same person: face shape, eye position, nose structure, mouth shape
-3. Consider age-appropriate changes if document is old
-4. Account for different lighting conditions and angles
-5. Verify liveness: ensure selfie is a live person, not a photo of a photo
-
 Return JSON response with:
-- verified: boolean (true if document looks genuine AND face matches when applicable)
+- verified: boolean (true if it looks like a genuine attempt)
 - confidence: number (0-100)
 - issues: string[] (specific problems found)
 - details: { type: string, number: string, name: string }
-- faceMatch: { verified: boolean, confidence: number, issues: string[] } (when both images provided)
 `;
 
     const response = await fetch(GEMINI_API_URL, {
@@ -157,120 +149,7 @@ export default function AIHelpButton({ documentUri, onVerificationComplete }: {
       setIsVerifying(false);
     }
   };
-//   const analyzeDocumentWithFaceMatch = async (documentType: string, documentImage: string, selfieImage?: string) => {
-//   try {
-//     const prompt = `
-//     Analyze this ${documentType} document for KYC verification. 
-//     ${selfieImage ? 'Also compare the document photo with the provided selfie for face matching.' : ''}
-    
-//     // ... (the rest of your prompt as above)
-//     `;
 
-//     // For face matching, you would send both images to Gemini
-//     const contents = [{
-//       parts: [
-//         { text: prompt },
-//         {
-//           inline_data: {
-//             mime_type: "image/jpeg",
-//             data: documentImage
-//           }
-//         }
-//       ]
-//     }];
-
-//     // Add selfie image if provided
-//     if (selfieImage) {
-//       contents[0].parts.push({
-//         inline_data: {
-//           mime_type: "image/jpeg", 
-//           data: selfieImage
-//         }
-//       });
-//     }
-
-//     const response = await fetch(GEMINI_API_URL, {
-//       method: 'POST',
-//       headers: {
-//         'Content-Type': 'application/json',
-//       },
-//       body: JSON.stringify({ contents })
-//     });
-
-//     // ... process response
-//   } catch (error) {
-//     // ... error handling
-//   }
-// };
-// In AIHelpButton.tsx, add this function:
-const performFinalFaceMatching = async () => {
-  setIsVerifying(true);
-  try {
-    // Simulate the final face matching process
-    await new Promise(resolve => setTimeout(resolve, 2500));
-    
-    const faceMatchSuccess = Math.random() > 0.3;
-    const hasVerifiedDocuments = Object.values(verificationResults).some(result => result.verified);
-
-    if (faceMatchSuccess && hasVerifiedDocuments) {
-      Alert.alert(
-        '✅ Face Match Successful',
-        'Your selfie matches the document photo! Ready for final submission.',
-        [
-          {
-            text: 'Submit KYC',
-            onPress: () => router.push({
-              pathname: "/success",
-              params: { 
-                message: "KYC Approved! Face verification successful",
-                verified: "true"
-              }
-            })
-          }
-        ]
-      );
-    } else {
-      Alert.alert(
-        '❌ Face Match Failed',
-        faceMatchSuccess ? 
-          'Please complete document verification first' :
-          'Your selfie doesn\'t match the document photo. Please retake.',
-        [{ text: 'OK' }]
-      );
-    }
-  } catch (error) {
-    Alert.alert('Error', 'Face matching failed. Please try again.');
-  } finally {
-    setIsVerifying(false);
-  }
-};
-
-// Update the showVerificationOptions function:
-const showVerificationOptions = () => {
-  Alert.alert(
-    '🤖 AI Verification',
-    'Choose verification option:',
-    [
-      {
-        text: 'Verify Current Document',
-        onPress: verifyDocument,
-      },
-      {
-        text: 'Final Face Matching',
-        onPress: performFinalFaceMatching,
-        disabled: !documents.selfie || Object.values(verificationResults).filter(r => r.verified).length === 0
-      },
-      {
-        text: 'View Status Report',
-        onPress: generateFinalReport,
-      },
-      {
-        text: 'Cancel',
-        style: 'cancel'
-      }
-    ]
-  );
-};
   const generateFinalReport = () => {
     const allVerified = Object.values(verificationResults).every(result => result.verified);
     const totalConfidence = Object.values(verificationResults).reduce((sum, result) => sum + result.confidence, 0);
@@ -300,6 +179,28 @@ const showVerificationOptions = () => {
     }
   };
 
+  const showVerificationOptions = () => {
+    Alert.alert(
+      '🤖 AI Document Verification',
+      'I can help verify your documents using advanced AI technology',
+      [
+        {
+          text: 'Verify Current Document',
+          onPress: verifyDocument,
+          style: 'default'
+        },
+        {
+          text: 'View Final Report',
+          onPress: generateFinalReport,
+          style: 'default'
+        },
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        }
+      ]
+    );
+  };
 
   return (
     <TouchableOpacity 
