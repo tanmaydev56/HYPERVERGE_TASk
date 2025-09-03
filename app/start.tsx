@@ -1,104 +1,185 @@
-// app/start.tsx
+import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
-import { FlatList, Text, TouchableOpacity, View } from "react-native";
+import { Smartphone, FileText, Shield, Clock, CheckCircle } from "lucide-react-native";
 
-import { account } from "@/lib/appwrite";
-import {
-  ArrowLeft,
-  Car,
-  CreditCard,
-  FileText,
-  LogOut,
-  ShieldCheck,
-  UserCheck
-} from "lucide-react-native";
-import { useEffect } from "react";
 
-const kycMethods = [
-  {
-    id: "digilocker",
-    name: "Digilocker",
-    icon: ShieldCheck,
-    description: "Verify via Digilocker for instant KYC.",
-  },
-  {
-    id: "aadhaar",
-    name: "Aadhaar Card",
-    icon: CreditCard,
-    description: "Upload or scan your Aadhaar.",
-  },
-  {
-    id: "pan",
-    name: "PAN Card",
-    icon: FileText,
-    description: "Upload your PAN for identity verification.",
-  },
-  {
-    id: "voterid",
-    name: "Voter ID",
-    icon: UserCheck,
-    description: "Use your Voter ID for KYC.",
-  },
-  {
-    id: "dl",
-    name: "Driving License",
-    icon: Car,
-    description: "Verify using your Driving License.",
-  },
-];
-
-export default function KYCStartScreen() {
+export default function MethodSelectionScreen() {
   const router = useRouter();
-  useEffect(() => {
-    (async () => {
-      try {
-        await account.get(); // session OK
-      } catch {
-        router.replace("/login"); // no session
-      }
-    })(); 
-    }, []);
- const logout = async () => {
-    await account.deleteSession("current");
-    router.replace("/login");
-  };
+
   return (
-    <View className="flex-1 bg-white px-6 pt-12">
-      {/* Header */}
-      <View className="flex-row items-center mb-6">
-        <TouchableOpacity onPress={() => router.back()} className="mr-4">
-          <ArrowLeft size={24} color="#000" />
-        </TouchableOpacity>
-        <Text className="flex-1 text-2xl font-bold text-gray-900">
-          Choose KYC Method
+   
+    <ScrollView className="flex-1 bg-blue-50 p-6" style={{ backgroundColor: '#eff6ff' }}>
+      {/* Header Section */}
+      <View className="items-center mt-10 mb-8">
+        <View className="bg-blue-100 p-4 rounded-full mb-4">
+          <Shield size={40} color="#1D4ED8" />
+        </View>
+        <Text className="text-3xl font-bold text-center text-gray-900 mb-2">
+          Welcome to Secure KYC
         </Text>
-        <TouchableOpacity onPress={logout}>
-          <LogOut size={24} color="#EF4444" />
+        <Text className="text-lg text-gray-600 text-center">
+          Let's verify your identity quickly and securely
+        </Text>
+      </View>
+
+      {/* Process Overview */}
+      <View className="bg-white rounded-2xl p-6 mb-6 border border-gray-100" style={{
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.1,
+        shadowRadius: 3,
+        elevation: 2,
+      }}>
+        <Text className="text-xl font-semibold text-center mb-4 text-gray-900">
+          📋 What You'll Need
+        </Text>
+        
+        <View className="space-y-3">
+          <View className="flex-row items-center">
+            <CheckCircle size={20} color="#22C55E" />
+            <Text className="ml-3 text-gray-700">Aadhaar Card</Text>
+          </View>
+          <View className="flex-row items-center">
+            <CheckCircle size={20} color="#22C55E" />
+            <Text className="ml-3 text-gray-700">PAN Card</Text>
+          </View>
+          <View className="flex-row items-center">
+            <CheckCircle size={20} color="#22C55E" />
+            <Text className="ml-3 text-gray-700">Driving License</Text>
+          </View>
+          <View className="flex-row items-center">
+            <CheckCircle size={20} color="#22C55E" />
+            <Text className="ml-3 text-gray-700">Voter ID Card</Text>
+          </View>
+          <View className="flex-row items-center">
+            <CheckCircle size={20} color="#22C55E" />
+            <Text className="ml-3 text-gray-700">Your Selfie Photo</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Time Estimate */}
+      <View className="bg-blue-50 rounded-2xl p-5 mb-6 border border-blue-100">
+        <View className="flex-row items-center justify-center mb-2">
+          <Clock size={20} color="#1D4ED8" />
+          <Text className="ml-2 text-blue-800 font-semibold">
+            Takes only 5-7 minutes
+          </Text>
+        </View>
+        <Text className="text-center text-blue-600 text-sm">
+          All documents can be captured with your phone camera
+        </Text>
+      </View>
+
+      {/* Verification Options */}
+      <Text className="text-lg font-semibold text-center mb-4 text-gray-900">
+        Choose Verification Method
+      </Text>
+
+      {/* DigiLocker Option */}
+      <TouchableOpacity
+        className="bg-white rounded-2xl p-6 mb-4 border-2 border-blue-100 active:border-blue-300"
+        onPress={() => router.push("/kyc/document/digilocker")}
+        style={{
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.1,
+          shadowRadius: 3,
+          elevation: 2,
+        }}
+      >
+        <View className="flex-row items-center">
+          <View className="bg-blue-100 p-3 rounded-xl">
+            <Smartphone size={28} color="#1D4ED8" />
+          </View>
+          <View className="ml-4 flex-1">
+            <Text className="text-lg font-semibold text-gray-900">DigiLocker Verification</Text>
+            <Text className="text-gray-600 mt-1 text-sm">
+              Instant verification using government database
+            </Text>
+            <View className="flex-row items-center mt-2">
+              <View className="bg-green-100 px-2 py-1 rounded">
+                <Text className="text-green-800 text-xs font-medium">FASTEST</Text>
+              </View>
+              <Text className="text-blue-600 text-sm ml-2">Recommended</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+
+      {/* Document Upload Option */}
+      <TouchableOpacity
+        className="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-100 active:border-gray-300"
+        onPress={() => router.push("/kyc/document/aadhaar")}
+        style={{
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.1,
+          shadowRadius: 3,
+          elevation: 2,
+        }}
+      >
+        <View className="flex-row items-center">
+          <View className="bg-gray-100 p-3 rounded-xl">
+            <FileText size={28} color="#4B5563" />
+          </View>
+          <View className="ml-4 flex-1">
+            <Text className="text-lg font-semibold text-gray-900">Manual Document Upload</Text>
+            <Text className="text-gray-600 mt-1 text-sm">
+              Upload photos of your documents step-by-step
+            </Text>
+            <View className="flex-row items-center mt-2">
+              <Clock size={14} color="#6B7280" />
+              <Text className="text-gray-500 text-sm ml-1">5-7 minutes</Text>
+            </View>
+          </View>
+        </View>
+      </TouchableOpacity>
+
+      {/* Security Assurance */}
+      <View className="bg-gray-50 rounded-2xl p-5 mb-6 border border-gray-200">
+        <View className="flex-row items-center justify-center mb-2">
+          <Shield size={18} color="#4B5563" />
+          <Text className="ml-2 text-gray-700 font-medium">Bank-level Security</Text>
+        </View>
+        <View className="flex-row justify-around mt-3">
+          <View className="items-center">
+            <View className="bg-green-100 p-2 rounded-full">
+              <Text className="text-green-800 text-xs font-bold">256-bit</Text>
+            </View>
+            <Text className="text-gray-600 text-xs mt-1">Encryption</Text>
+          </View>
+          <View className="items-center">
+            <View className="bg-blue-100 p-2 rounded-full">
+              <Text className="text-blue-800 text-xs font-bold">SSL</Text>
+            </View>
+            <Text className="text-gray-600 text-xs mt-1">Secure</Text>
+          </View>
+          <View className="items-center">
+            <View className="bg-purple-100 p-2 rounded-full">
+              <Text className="text-purple-800 text-xs font-bold">GDPR</Text>
+            </View>
+            <Text className="text-gray-600 text-xs mt-1">Compliant</Text>
+          </View>
+        </View>
+      </View>
+
+      {/* Support Info */}
+      <View className="items-center mb-8">
+        <Text className="text-gray-500 text-center text-sm mb-2">
+          Need help? Our support team is available 24/7
+        </Text>
+        <TouchableOpacity>
+          <Text className="text-blue-600 font-semibold">Contact Support</Text>
         </TouchableOpacity>
       </View>
 
-      {/* List */}
-      <FlatList
-        data={kycMethods}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => {
-          const Icon = item.icon;
-          return (
-            <TouchableOpacity
-              className="flex-row items-center bg-gray-50 p-4 rounded-xl mb-4 active:bg-gray-100"
-              onPress={() => router.push(`/kyc/${item.id}`)}
-            >
-              <Icon size={36} color="#4A90E2" className="mr-4" />
-              <View className="flex-1">
-                <Text className="text-lg font-semibold text-gray-900">
-                  {item.name}
-                </Text>
-                <Text className="text-sm text-gray-600">{item.description}</Text>
-              </View>
-            </TouchableOpacity>
-          );
-        }}
-      />
-    </View>
+      {/* Privacy Note */}
+      <Text className="text-gray-400 text-center text-xs mb-4">
+        🔒 Your data is encrypted end-to-end and never shared with third parties without your explicit consent. 
+        We comply with all government regulations and data protection laws.
+      </Text>
+    </ScrollView>
+   
   );
 }

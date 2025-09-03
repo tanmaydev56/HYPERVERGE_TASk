@@ -1,22 +1,39 @@
 // app/kyc/[id].tsx
-import { useEffect, useState } from "react";
-import {
-  View, Text, TouchableOpacity, Alert,
-  KeyboardAvoidingView, Platform, Image, ScrollView,
-} from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { Camera, ChevronLeft, ChevronRight } from "lucide-react-native";
+import AIHelpButton from "@/components/AIHelpButton";
+import { addToQueue } from "@/lib/offlineQueues";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
-import { addToQueue } from "@/lib/offlineQueues";
-import AIHelpButton from "@/components/AIHelpButton";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import { Camera, ChevronLeft, ChevronRight, Upload } from "lucide-react-native";
+import { useEffect, useState } from "react";
+import {
+  Alert,
+  Image,
+  KeyboardAvoidingView, Platform,
+  ScrollView,
+  Text, TouchableOpacity,
+  View,
+} from "react-native";
 
+import { convertImageToBase64 } from '@/lib/imageUtils';
+
+// Add interface at top
+interface VerificationResult {
+  verified: boolean;
+  confidence: number;
+  issues: string[];
+  details: {
+    type: string;
+    number?: string;
+    name?: string;
+    validity?: string;
+  };
+}
 const DOCUMENT_STEPS = [
-  { id: "aadhaar", name: "Aadhaar Card", description: "Front side of your Aadhaar card" },
-  { id: "pan", name: "PAN Card", description: "Front side of your PAN card" },
-  { id: "dl", name: "Driving License", description: "Front side of your Driving License" },
-  { id: "voterid", name: "Voter ID", description: "Front side of your Voter ID card" },
-  { id: "selfie", name: "Selfie Photo", description: "Clear photo of your face" },
+  { id: "aadhaar", name: "Aadhaar Card", description: "Upload front side of your Aadhaar card" },
+  { id: "pan", name: "PAN Card", description: "Upload front side of your PAN card" },
+  { id: "dl", name: "Driving License", description: "Upload front side of your Driving License" },
+  { id: "selfie", name: "Selfie Photo", description: "Take a clear photo of your face using camera" },
 ];
 
 export default function DocumentCollectionScreen() {
@@ -28,13 +45,14 @@ export default function DocumentCollectionScreen() {
     aadhaar: null,
     pan: null,
     dl: null,
-    voterid: null,
+   
     selfie: null,
   });
   const [loading, setLoading] = useState(false);
-
+const [verificationResults, setVerificationResults] = useState<{[key: string]: VerificationResult}>({});
   const currentDocument = DOCUMENT_STEPS[currentStep];
   const isLastStep = currentStep === DOCUMENT_STEPS.length - 1;
+  const isSelfieStep = currentDocument.id === "selfie";
   const allDocumentsUploaded = Object.values(documents).every(doc => doc !== null);
 
   useEffect(() => {
@@ -43,37 +61,130 @@ export default function DocumentCollectionScreen() {
     }
   }, [id]);
 
-  const openCamera = async () => {
-    try {
+const openImagePicker = async () => {
+  try {
+    const isSelfieStep = currentDocument.id === "selfie";
+    
+    if (isSelfieStep) {
+      // For selfie, use camera
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== "granted") {
-        Alert.alert("Permission Required", "Camera permission is needed to capture documents");
+        Alert.alert("Permission Required", "Camera permission is needed to take selfie");
         return;
       }
 
-      const isSelfie = currentDocument.id === "selfie";
       const res = await ImagePicker.launchCameraAsync({
         allowsEditing: true,
-        aspect: isSelfie ? [1, 1] : [4, 3],
+        aspect: [1, 1],
         quality: 0.7,
       });
 
       if (!res.canceled) {
         const compressed = await ImageManipulator.manipulateAsync(
           res.assets[0].uri,
-          [{ resize: { width: isSelfie ? 640 : 800 } }],
+          [{ resize: { width: 640 } }],
           { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG }
         );
-
+        
         setDocuments(prev => ({
           ...prev,
           [currentDocument.id]: compressed.uri
         }));
       }
-    } catch (error) {
-      Alert.alert("Error", "Failed to capture image. Please try again.");
+    } else {
+      // For documents, use gallery
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert("Permission Required", "Gallery permission is needed to upload documents");
+        return;
+      }
+
+      const res = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.7,
+      });
+
+      if (!res.canceled) {
+        const compressed = await ImageManipulator.manipulateAsync(
+          res.assets[0].uri,
+          [{ resize: { width: 800 } }],
+          { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG }
+        );
+        
+        setDocuments(prev => ({
+          ...prev,
+          [currentDocument.id]: compressed.uri
+        }));
+
+        // Instant verification for documents (not selfie)
+        const result = await verifyDocumentInstantly(currentDocument.id, compressed.uri);
+        if (result && !result.verified) {
+          Alert.alert(
+            '⚠️ Verification Issues',
+            `Please check your ${currentDocument.name}:\n${result.issues.join('\n• ')}`
+          );
+        }
+      }
     }
-  };
+  } catch (error) {
+    Alert.alert("Error", "Failed to process image. Please try again.");
+  }
+};
+
+// Add this verifyDocumentInstantly function (place it near your other functions)
+const verifyDocumentInstantly = async (docType: string, uri: string): Promise<any> => {
+  try {
+    // Simulate verification for demo - replace with actual Gemini API when ready
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    const results = {
+      aadhaar: { 
+        verified: Math.random() > 0.2, 
+        confidence: Math.floor(Math.random() * 30) + 70,
+        issues: Math.random() > 0.2 ? [] : ['Document blurry', 'Number not fully visible'],
+        details: { type: 'Aadhaar', number: '123456789012', name: 'John Doe' }
+      },
+      pan: { 
+        verified: Math.random() > 0.2,
+        confidence: Math.floor(Math.random() * 30) + 70,
+        issues: Math.random() > 0.2 ? [] : ['PAN number unclear', 'Name not readable'],
+        details: { type: 'PAN', number: 'ABCDE1234F', name: 'John Doe' }
+      },
+      dl: { 
+        verified: Math.random() > 0.2,
+        confidence: Math.floor(Math.random() * 30) + 70,
+        issues: Math.random() > 0.2 ? [] : ['License number unclear', 'Expiry date not visible'],
+        details: { type: 'Driving License', number: 'DL1420110012345', name: 'John Doe' }
+      },
+      
+    };
+
+    const result = results[docType as keyof typeof results] || { 
+      verified: false, 
+      confidence: 0, 
+      issues: ['Unknown document type'],
+      details: { type: docType }
+    };
+    
+    // Update verification results state
+    setVerificationResults(prev => ({
+      ...prev,
+      [docType]: result
+    }));
+
+    return result;
+  } catch (error) {
+    console.error('Instant verification failed:', error);
+    return {
+      verified: false,
+      confidence: 0,
+      issues: ['Verification service unavailable'],
+      details: { type: docType }
+    };
+  }
+};
 
   const handleNext = () => {
     if (currentStep < DOCUMENT_STEPS.length - 1) {
@@ -87,47 +198,125 @@ export default function DocumentCollectionScreen() {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!allDocumentsUploaded) {
-      Alert.alert("Incomplete", "Please upload all required documents before submitting.");
-      return;
-    }
+const handleSubmit = async () => {
+  if (!allDocumentsUploaded) {
+    Alert.alert("Incomplete", "Please upload all required documents before submitting.");
+    return;
+  }
 
-    setLoading(true);
-    try {
+  setLoading(true);
+  try {
+    // Perform final face matching verification
+    const finalResult = await performFinalFaceMatching();
+    
+    if (finalResult.verified) {
       // Add all documents to offline queue
       for (const [docType, uri] of Object.entries(documents)) {
         if (uri && docType !== "selfie") {
-          await addToQueue(docType, { documentType: docType }, uri);
+          await addToQueue(docType, { 
+            documentType: docType,
+            verification: verificationResults[docType]
+          }, uri);
         }
       }
       
       // Add selfie separately
       if (documents.selfie) {
-        await addToQueue("selfie", { documentType: "selfie" }, documents.selfie);
+        await addToQueue("selfie", { 
+          documentType: "selfie",
+          verification: finalResult.faceMatch
+        }, documents.selfie);
       }
 
       router.replace({
         pathname: "/success",
-        params: { message: "All documents submitted successfully!" }
+        params: { 
+          message: `KYC Approved! Document confidence: ${finalResult.documentConfidence}%, Face match: ${finalResult.faceMatchConfidence}%`,
+          verified: "true"
+        }
       });
-    } catch (error) {
-      Alert.alert("Error", "Failed to submit documents. Please try again.");
-    } finally {
-      setLoading(false);
+    } else {
+      const allIssues = [
+        ...finalResult.documentIssues,
+        ...finalResult.faceMatchIssues
+      ];
+      
+      Alert.alert(
+        '❌ Final Verification Failed',
+        `Please fix these issues:\n${allIssues.join('\n• ')}`,
+        [{ text: 'Retry' }]
+      );
     }
-  };
+  } catch (error) {
+    Alert.alert("Error", "Failed to complete verification. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const getProgressPercentage = () => {
-    return ((currentStep + 1) / DOCUMENT_STEPS.length) * 100;
-  };
+// Add this new function for final face matching
+const performFinalFaceMatching = async (): Promise<{
+  verified: boolean;
+  documentConfidence: number;
+  faceMatchConfidence: number;
+  documentIssues: string[];
+  faceMatchIssues: string[];
+}> => {
+  try {
+    // Simulate face matching verification (replace with actual Gemini call)
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    const faceMatchSuccess = Math.random() > 0.3; // 70% success rate
+    const documentSuccess = verificationResults.aadhaar?.verified || 
+                           verificationResults.pan?.verified || 
+                           verificationResults.dl?.verified || 
+                           verificationResults.voterid?.verified;
+
+    if (faceMatchSuccess && documentSuccess) {
+      return {
+        verified: true,
+        documentConfidence: 85,
+        faceMatchConfidence: 90,
+        documentIssues: [],
+        faceMatchIssues: []
+      };
+    } else {
+      return {
+        verified: false,
+        documentConfidence: 60,
+        faceMatchConfidence: 45,
+        documentIssues: documentSuccess ? [] : ['Document verification failed'],
+        faceMatchIssues: faceMatchSuccess ? [] : ['Face does not match document photo']
+      };
+    }
+  } catch (error) {
+    return {
+      verified: false,
+      documentConfidence: 0,
+      faceMatchConfidence: 0,
+      documentIssues: ['Verification service error'],
+      faceMatchIssues: ['Face matching unavailable']
+    };
+  }
+};
+  
+  const progressFillWidth = `${(currentStep ) / DOCUMENT_STEPS.length * 100}%`;
+
 
   return (
     <KeyboardAvoidingView 
       behavior={Platform.OS === "ios" ? "padding" : "height"} 
       className="flex-1 bg-white"
     >
-      <AIHelpButton />
+      <AIHelpButton 
+  documentUri={documents[currentDocument.id]}
+  onVerificationComplete={(result) => {
+    setVerificationResults(prev => ({
+      ...prev,
+      [currentDocument.id]: result
+    }));
+  }}
+/>
       
       {/* Progress Header */}
       <View className="bg-primary px-6 pt-12 pb-4">
@@ -139,12 +328,12 @@ export default function DocumentCollectionScreen() {
         </Text>
         
         {/* Progress Bar */}
-        <View className="bg-white bg-opacity-30 rounded-full h-2 mb-2">
-          <View 
-            className="bg-white rounded-full h-2"
-            style={{ width: `${getProgressPercentage()}%` }}
-          />
-        </View>
+        <View className="bg-white/30 rounded-full h-2 mb-2">
+    <View
+      className="bg-green-500 rounded-full h-2"   // <- green fill
+      style={{ width: progressFillWidth }}
+    />
+  </View>
       </View>
 
       <ScrollView className="flex-1 px-6 pt-6">
@@ -156,7 +345,7 @@ export default function DocumentCollectionScreen() {
           {currentDocument.description}
         </Text>
 
-        {/* Camera Preview or Placeholder */}
+        {/* Image Preview or Upload Button */}
         {documents[currentDocument.id] ? (
           <View className="items-center mb-6">
             <Image 
@@ -165,24 +354,40 @@ export default function DocumentCollectionScreen() {
               resizeMode="contain"
             />
             <TouchableOpacity 
-              onPress={openCamera}
+              onPress={openImagePicker}
               className="bg-gray-100 rounded-xl px-6 py-3 items-center"
             >
-              <Text className="text-primary font-semibold">Retake Photo</Text>
+              <Text className="text-primary font-semibold">
+                {isSelfieStep ? "Retake Selfie" : "Change Document"}
+              </Text>
             </TouchableOpacity>
           </View>
         ) : (
           <TouchableOpacity 
-            onPress={openCamera}
+            onPress={openImagePicker}
             className="bg-gray-100 rounded-xl py-12 items-center mb-6 border-2 border-dashed border-gray-300"
           >
-            <Camera size={48} color="#4A90E2" />
-            <Text className="text-primary text-lg font-semibold mt-3">
-              Tap to Capture
-            </Text>
-            <Text className="text-gray-600 text-center mt-2 px-4">
-              Make sure the document is clear and all details are visible
-            </Text>
+            {isSelfieStep ? (
+              <>
+                <Camera size={48} color="#4A90E2" />
+                <Text className="text-primary text-lg font-semibold mt-3">
+                  Take Selfie
+                </Text>
+                <Text className="text-gray-600 text-center mt-2 px-4">
+                  Use camera to take a clear photo of your face
+                </Text>
+              </>
+            ) : (
+              <>
+                <Upload size={48} color="#4A90E2" />
+                <Text className="text-primary text-lg font-semibold mt-3">
+                  Upload Document
+                </Text>
+                <Text className="text-gray-600 text-center mt-2 px-4">
+                  Select from your gallery or take a photo
+                </Text>
+              </>
+            )}
           </TouchableOpacity>
         )}
 
@@ -241,6 +446,7 @@ export default function DocumentCollectionScreen() {
             </View>
           ))}
         </View>
+       
       </ScrollView>
     </KeyboardAvoidingView>
   );

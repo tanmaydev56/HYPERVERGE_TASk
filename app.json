@@ -8,7 +8,8 @@
       "appwriteDatabaseId": "68b749070002ddbb0dc2",
       "appwriteProfilesCollectionId": "profiles",
       "appwriteKycCollectionId": "kyc_requests",
-      "appwriteBucketId": "kyc_uploads"
+      "appwriteBucketId": "kyc_uploads",
+      
     },
     "version": "1.0.0",
     "orientation": "portrait",
