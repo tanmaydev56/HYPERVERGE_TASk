@@ -7,7 +7,9 @@ export default function SuccessScreen() {
   const params = useLocalSearchParams();
   const router = useRouter();
   const isApproved = params.verified === "true";
-
+const params = useLocalSearchParams();
+  const router = useRouter();
+  const isApproved = params.verified === "true";
   return (
     <View className="flex-1 bg-white justify-center items-center p-6">
       {isApproved ? (
