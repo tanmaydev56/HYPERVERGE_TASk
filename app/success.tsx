@@ -115,10 +115,9 @@ const confidence = params.confidence ? ` with ${params.confidence}% confidence` 
         <Text className="text-xs text-gray-600 mt-1 text-center">
           {currentLanguage.toUpperCase()}
         </Text>
-          <Text className="text-lg text-green-600 text-center mt-2">
-        {params.message || `KYC Approved${confidence}!`}
-      </Text>
+         
       </TouchableOpacity>
+       
 
       <View className="flex-1 justify-center items-center p-6 min-h-screen pt-16">
         {/* Success Header */}
@@ -130,6 +129,9 @@ const confidence = params.confidence ? ` with ${params.confidence}% confidence` 
           <Text className="text-lg text-green-600 text-center mt-2">
             {content.subtitle}
           </Text>
+          <Text className="text-lg text-green-600 text-center mt-2">
+        {params.message || `KYC Approved${confidence}!`}
+      </Text>
         </View>
 
         
