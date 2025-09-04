@@ -26,13 +26,13 @@ export default function RootLayout() {
   return (
     <>
       <SafeAreaView className="flex-1 bg-white">
-        <StatusBar style="dark" />
+        
         
         {/* Logout button container - aligned to top-right */}
-        <View className="absolute top-0 right-0 z-50 p-4">
+        <View className="absolute top-16 right-6 z-50 p-2">
           <TouchableOpacity 
             onPress={logout}
-            className="p-2 bg-red-100 rounded-full"
+            className="p-3 bg-red-100 rounded-full"
           >
             <LogOut size={24} color="#EF4444" />
           </TouchableOpacity>

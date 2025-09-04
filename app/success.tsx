@@ -103,13 +103,7 @@ const confidence = params.confidence ? ` with ${params.confidence}% confidence` 
       <TouchableOpacity 
         onPress={toggleLanguage}
         className="absolute top-4 right-4 z-50 bg-white p-3 rounded-full shadow-md border border-gray-200"
-        style={{
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.1,
-          shadowRadius: 4,
-          elevation: 3,
-        }}
+       
       >
         <Languages size={24} color="#4B5563" />
         <Text className="text-xs text-gray-600 mt-1 text-center">

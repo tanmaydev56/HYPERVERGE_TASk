@@ -8,7 +8,7 @@ export default function MethodSelectionScreen() {
 
   return (
    
-    <ScrollView className="flex-1 bg-blue-50 p-6" style={{ backgroundColor: '#eff6ff' }}>
+    <ScrollView className="flex-1 bg-blue-50 p-6" >
       {/* Header Section */}
       <View className="items-center mt-10 mb-8">
         <View className="bg-blue-100 p-4 rounded-full mb-4">
@@ -23,13 +23,7 @@ export default function MethodSelectionScreen() {
       </View>
 
       {/* Process Overview */}
-      <View className="bg-white rounded-2xl p-6 mb-6 border border-gray-100" style={{
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.1,
-        shadowRadius: 3,
-        elevation: 2,
-      }}>
+      <View className="bg-white rounded-2xl p-6 mb-6 border border-gray-100">
         <Text className="text-xl font-semibold text-center mb-4 text-gray-900">
           📋 What You'll Need
         </Text>
@@ -69,6 +63,7 @@ export default function MethodSelectionScreen() {
       </View>
 
       {/* Verification Options */}
+     
       <Text className="text-lg font-semibold text-center mb-4 text-gray-900">
         Choose Verification Method
       </Text>
@@ -76,14 +71,8 @@ export default function MethodSelectionScreen() {
       {/* DigiLocker Option */}
       <TouchableOpacity
         className="bg-white rounded-2xl p-6 mb-4 border-2 border-blue-100 active:border-blue-300"
-        onPress={() => router.push("/kyc/document/digilocker")}
-        style={{
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.1,
-          shadowRadius: 3,
-          elevation: 2,
-        }}
+        onPress={() => router.push("/(kyc)/document/digilocker")}
+       
       >
         <View className="flex-row items-center">
           <View className="bg-blue-100 p-3 rounded-xl">
@@ -107,16 +96,11 @@ export default function MethodSelectionScreen() {
       {/* Document Upload Option */}
       <TouchableOpacity
         className="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-100 active:border-gray-300"
-        onPress={() => router.push("/kyc/document/aadhaar")}
-        style={{
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.1,
-          shadowRadius: 3,
-          elevation: 2,
-        }}
+        onPress={() => router.push("/(kyc)/document/aadhaar")}
+      
+        
       >
-        <View className="flex-row items-center">
+        <View className="flex-row items-center ">
           <View className="bg-gray-100 p-3 rounded-xl">
             <FileText size={28} color="#4B5563" />
           </View>
@@ -131,51 +115,15 @@ export default function MethodSelectionScreen() {
             </View>
           </View>
         </View>
+       
       </TouchableOpacity>
+     
+<View className="h-20" >
 
-      {/* Security Assurance */}
-      <View className="bg-gray-50 rounded-2xl p-5 mb-6 border border-gray-200">
-        <View className="flex-row items-center justify-center mb-2">
-          <Shield size={18} color="#4B5563" />
-          <Text className="ml-2 text-gray-700 font-medium">Bank-level Security</Text>
-        </View>
-        <View className="flex-row justify-around mt-3">
-          <View className="items-center">
-            <View className="bg-green-100 p-2 rounded-full">
-              <Text className="text-green-800 text-xs font-bold">256-bit</Text>
-            </View>
-            <Text className="text-gray-600 text-xs mt-1">Encryption</Text>
-          </View>
-          <View className="items-center">
-            <View className="bg-blue-100 p-2 rounded-full">
-              <Text className="text-blue-800 text-xs font-bold">SSL</Text>
-            </View>
-            <Text className="text-gray-600 text-xs mt-1">Secure</Text>
-          </View>
-          <View className="items-center">
-            <View className="bg-purple-100 p-2 rounded-full">
-              <Text className="text-purple-800 text-xs font-bold">GDPR</Text>
-            </View>
-            <Text className="text-gray-600 text-xs mt-1">Compliant</Text>
-          </View>
-        </View>
-      </View>
+  </View> 
+      
 
-      {/* Support Info */}
-      <View className="items-center mb-8">
-        <Text className="text-gray-500 text-center text-sm mb-2">
-          Need help? Our support team is available 24/7
-        </Text>
-        <TouchableOpacity>
-          <Text className="text-blue-600 font-semibold">Contact Support</Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Privacy Note */}
-      <Text className="text-gray-400 text-center text-xs mb-4">
-        🔒 Your data is encrypted end-to-end and never shared with third parties without your explicit consent. 
-        We comply with all government regulations and data protection laws.
-      </Text>
+    
     </ScrollView>
    
   );

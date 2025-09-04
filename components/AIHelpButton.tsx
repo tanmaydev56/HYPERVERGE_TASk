@@ -206,13 +206,15 @@ export default function AIHelpButton({ documentUri, onVerificationComplete }: {
     <TouchableOpacity 
       onPress={showVerificationOptions}
       disabled={isVerifying}
-      className="absolute top-4 right-4 bg-blue-100  p-3 rounded-full shadow-md z-10"
+      className="  bg-blue-100 flex    p-3 rounded-full shadow-md z-10"
     >
-      {isVerifying ? (
+      
+        {isVerifying ? (
         <ActivityIndicator size="small" color="#1D4ED8" />
       ) : (
         <MessageCircle size={24} color="#1D4ED8" />
       )}
+      
     </TouchableOpacity>
   );
 }

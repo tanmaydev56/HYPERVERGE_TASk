@@ -494,10 +494,7 @@ const analyzeWithGeminiAI = async (documentImages: {[key: string]: string}, self
             </View>
           ))}
         </View>
-       
-      </ScrollView>
-    
-         <AIHelpButton 
+       <AIHelpButton 
   documentUri={documents[currentDocument.id]}
   onVerificationComplete={(result) => {
     setVerificationResults(prev => ({
@@ -506,6 +503,9 @@ const analyzeWithGeminiAI = async (documentImages: {[key: string]: string}, self
     }));
   }}
 />
+      </ScrollView>
+    
+         
     </KeyboardAvoidingView>
   );
 }
