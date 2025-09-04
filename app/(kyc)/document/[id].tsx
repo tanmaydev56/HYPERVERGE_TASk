@@ -161,12 +161,15 @@ const handleSubmit = async () => {
     /* ----- 2.  Gemini bundle ----- */
     const geminiResult = await analyzeKycBundle(documentImages, selfieBase64);
 
-    /* ----- 3.  build result array for your rule ----- */
-    const docResults: VerificationResult[] = Object.entries(documentImages).map(([type, _]) =>
-      geminiResult.docResults?.[type] ?? { verified: false, confidence: 0, issues: [], details: { type } }
-    );
-    const selfieResult: VerificationResult =
-      geminiResult.selfieResult ?? { verified: false, confidence: 0, issues: [], details: { type: 'selfie' } };
+   // 3.  individual results (real ones)
+const docResults: VerificationResult[] = await Promise.all(
+  Object.entries(documentImages).map(([type, b64]) =>
+    analyzeDocumentWithGemini(type as any, b64)
+  )
+);
+const selfieResult: VerificationResult = selfieBase64
+  ? await analyzeDocumentWithGemini('selfie', selfieBase64)
+  : { verified: true, confidence: 100, issues: [], details: { type: 'selfie' } };
 
     /* ----- 4.  pass / fail ----- */
     if (isKycApproved([...docResults, selfieResult])) {

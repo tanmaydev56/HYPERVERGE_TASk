@@ -25,10 +25,10 @@ export default function RootLayout() {
   
   return (
     <>
-      <SafeAreaView className="flex-1 bg-white">
+      <SafeAreaView className="flex-1 bg-black">
         
         
-        {/* Logout button container - aligned to top-right */}
+      
         <View className="absolute top-[3.2rem] right-6 z-50 p-2">
           
           <TouchableOpacity 

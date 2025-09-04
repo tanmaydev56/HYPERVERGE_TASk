@@ -1,7 +1,7 @@
-import { Image,  Text, TouchableOpacity, View } from 'react-native'
-import React from 'react'
-import { Camera, Upload } from 'lucide-react-native'
 import { PROPSIMAGEPREVIEW } from '@/constants/types'
+import { Camera, Upload } from 'lucide-react-native'
+import React from 'react'
+import { Image, Text, TouchableOpacity, View } from 'react-native'
 const ImagePriew = ({isSelfieStep, openImagePicker, documents, currentDocument}:PROPSIMAGEPREVIEW) => {
   return (
     <View>
