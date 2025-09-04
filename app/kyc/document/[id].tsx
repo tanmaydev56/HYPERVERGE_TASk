@@ -352,7 +352,6 @@ const analyzeWithGeminiAI = async (documentImages: {[key: string]: string}, self
   }
 };
 
-// Add this new function for final face matching
 
   
   const progressFillWidth = `${(currentStep ) / DOCUMENT_STEPS.length * 100}%`;
@@ -363,15 +362,7 @@ const analyzeWithGeminiAI = async (documentImages: {[key: string]: string}, self
       behavior={Platform.OS === "ios" ? "padding" : "height"} 
       className="flex-1 bg-white"
     >
-      <AIHelpButton 
-  documentUri={documents[currentDocument.id]}
-  onVerificationComplete={(result) => {
-    setVerificationResults(prev => ({
-      ...prev,
-      [currentDocument.id]: result
-    }));
-  }}
-/>
+      
       
       {/* Progress Header */}
       <View className="bg-primary px-6 pt-12 pb-4">
@@ -487,7 +478,7 @@ const analyzeWithGeminiAI = async (documentImages: {[key: string]: string}, self
             </TouchableOpacity>
           )}
         </View>
-
+          
         {/* Document Status Overview */}
         <View className="bg-gray-50 rounded-xl p-4 mb-8">
           <Text className="font-semibold mb-3">Document Status</Text>
@@ -504,6 +495,15 @@ const analyzeWithGeminiAI = async (documentImages: {[key: string]: string}, self
         </View>
        
       </ScrollView>
+      <AIHelpButton 
+  documentUri={documents[currentDocument.id]}
+  onVerificationComplete={(result) => {
+    setVerificationResults(prev => ({
+      ...prev,
+      [currentDocument.id]: result
+    }));
+  }}
+/>
     </KeyboardAvoidingView>
   );
 }
