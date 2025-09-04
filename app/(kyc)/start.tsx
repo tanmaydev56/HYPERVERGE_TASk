@@ -7,9 +7,10 @@ export default function MethodSelectionScreen() {
   const router = useRouter();
 
   return (
-   
+     
     <ScrollView className="flex-1 bg-blue-50 p-6" >
       {/* Header Section */}
+      
       <View className="items-center mt-10 mb-8">
         <View className="bg-blue-100 p-4 rounded-full mb-4">
           <Shield size={40} color="#1D4ED8" />

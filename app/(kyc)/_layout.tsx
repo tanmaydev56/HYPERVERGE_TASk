@@ -6,7 +6,7 @@ import { useEffect } from "react";
 import "../globals.css";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TouchableOpacity, View } from "react-native";
-import { LogOut } from "lucide-react-native";
+import { ArrowLeft, LogOut } from "lucide-react-native";
 import { account } from "@/lib/appwrite";
 
 export default function RootLayout() {
@@ -30,6 +30,7 @@ export default function RootLayout() {
         
         {/* Logout button container - aligned to top-right */}
         <View className="absolute top-16 right-6 z-50 p-2">
+          
           <TouchableOpacity 
             onPress={logout}
             className="p-3 bg-red-100 rounded-full"
@@ -37,18 +38,16 @@ export default function RootLayout() {
             <LogOut size={24} color="#EF4444" />
           </TouchableOpacity>
         </View>
+      
 
         <Stack
           screenOptions={{
             headerShown: false,     
           }}
         >
-          {/* Public
-          <Stack.Screen name="login" />
-          <Stack.Screen name="signup" />
-          <Stack.Screen name="otp" /> */}
+        
 
-          {/* Protected */}
+          
           <Stack.Screen name="index" />
           <Stack.Screen name="start" />
         </Stack>
