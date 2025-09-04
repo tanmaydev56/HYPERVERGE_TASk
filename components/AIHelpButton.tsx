@@ -2,12 +2,13 @@ import { TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
 import { MessageCircle } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
+import Constants from 'expo-constants';
 import { convertImageToBase64 } from '@/lib/imageUtils';
 import { VerificationResult } from '@/constants/types';
 
-const GEMINI_API_KEY = 'AIzaSyBCv18PbsBhvOtK-Z5QYfucUh9Pp0g9zCU'; // ← move to .env
+const extra = (Constants.expoConfig as any)?.extra ?? {};
+const GEMINI_API_KEY = extra.EXPO_PUBLIC_GEMINI_API_KEY;
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-
 /* ---------- 1.  SINGLE-DOC ANALYSIS  ---------- */
 export const analyzeDocumentWithGemini = async (
   docType: 'aadhaar' | 'pan' | 'dl' | 'selfie',
@@ -34,24 +35,24 @@ Return **only** JSON:
   if (!res.ok) throw new Error(`Gemini ${res.status}`);
   const raw = await res.json();
   const text = raw.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
-  const json = text.match(/\{[\s\S]*\}/); // extract JSON blob
+  const json = text.match(/\{[\s\S]*\}/); 
   if (!json) throw new Error('No JSON from Gemini');
   return JSON.parse(json[0]);
 };
 
-/* ---------- 2.  MULTI-DOC + SELFIE WRAPPER  ---------- */
+
 export const analyzeKycBundle = async (
   docs: Record<string, string>,
   selfieB64: string | null
 ) => {
-  // 1. analyse every doc
+  
   const docPromises = Object.entries(docs).map(async ([type, b64]) => ({
     type,
     result: await analyzeDocumentWithGemini(type as any, b64),
   }));
   const docResults = await Promise.all(docPromises);
 
-  // 2. analyse selfie
+
   const selfieResult = selfieB64
     ? await analyzeDocumentWithGemini('selfie', selfieB64)
     : { verified: true, confidence: 100, issues: [], details: { type: 'selfie' } };

@@ -109,6 +109,11 @@ const openImagePicker = async () => {
 
         const imageBase64 = await convertImageToBase64(compressed.uri);
         const result = await analyzeDocumentWithGemini(currentDocument.id, imageBase64);
+         console.log('📤 GEMINI BODY:', JSON.stringify({
+          contents: [{ parts: [{ text: prompt }, { inlineData: { mimeType: 'image/jpeg', data: imageBase64 } }] }]
+        }, null, 2));
+
+        console.log('📊 IMAGE SIZE:', (imageBase64.length * 0.75) / 1024, 'KB');
         if (result && !result.verified) {
           Alert.alert(
             ' Verification Issues',
@@ -138,6 +143,7 @@ const openImagePicker = async () => {
     router.setParams({ id: prevStep });
   }
 };
+
 const handleSubmit = async () => {
   if (!allDocumentsUploaded) {
     Alert.alert('Incomplete', 'Please upload all required documents before submitting.');
@@ -220,8 +226,6 @@ const selfieResult: VerificationResult = selfieBase64
       className="flex-1 bg-white"
     >
       
-      
-      
       <ProgressHeader currentStep={currentStep}
        DOCUMENT_STEPS={DOCUMENT_STEPS}
         currentDocument={currentDocument}
@@ -241,8 +245,7 @@ const selfieResult: VerificationResult = selfieBase64
            />       
 
         
-       <Navagation 
-        currentStep={currentStep}
+       <Navagation currentStep={currentStep}
         handlePrevious={handlePrevious}
         handleNext={handleNext}
         documents={documents}
@@ -250,7 +253,7 @@ const selfieResult: VerificationResult = selfieBase64
         isLastStep={isLastStep} 
         handleSubmit={handleSubmit}
         allDocumentsUploaded={allDocumentsUploaded}
-        loading={loading}
+         loading={loading}
          />
        
         

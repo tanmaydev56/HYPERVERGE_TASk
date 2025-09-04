@@ -14,6 +14,25 @@ export const databases = new Databases(client);
 export const storage = new Storage(client);
 
 
+export async function restoreSession() {
+  try {
+    // Try to restore an existing session
+    const session = await account.getSession('current');
+    return session;
+  } catch {
+    // Session does not exist
+    return null;
+  }
+}
+
+export async function getCurrentUser() {
+  try {
+    await account.getSession('current');   // throws if missing
+    return await account.get();            // full user profile
+  } catch {
+    return null;                           // guest
+  }
+}
 
 
 export { client, ID, Query };

@@ -1,5 +1,8 @@
 // app/_layout.tsx
+import { initQueue } from "@/lib/offlineQueues";
 import { Stack, useRouter } from "expo-router";
+
+import { useEffect } from "react";
 import "../globals.css";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TouchableOpacity, View } from "react-native";
@@ -18,7 +21,8 @@ export default function RootLayout() {
     }
   };
 
-
+  useEffect(() => { initQueue(); }, []);
+  
   return (
     <>
       <SafeAreaView className="flex-1 bg-black">

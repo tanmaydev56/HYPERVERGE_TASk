@@ -4,7 +4,7 @@ import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { User, Shield } from "lucide-react-native";
 import {Models} from "appwrite";
-import { account } from "../../lib/appwrite";
+import { account, restoreSession } from "../../lib/appwrite";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -16,16 +16,17 @@ export default function HomeScreen() {
   }, []);
 
   const checkAuth = async () => {
-    try {
-      const currentUser = await account.get();
-      setUser(currentUser);
-    } catch (error) {
-      console.error('Auth error:', error);
-      router.replace("/login");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  try {
+    await restoreSession();          // 1. restore JWT cookie
+    const currentUser = await account.get(); // 2. fetch profile
+    setUser(currentUser);
+  } catch (error) {
+    console.error('Auth error:', error);
+    router.replace('/login');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
 
 

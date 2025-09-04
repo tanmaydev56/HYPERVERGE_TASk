@@ -1,6 +1,6 @@
 //app/login.tsx
 import { useRouter } from "expo-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
     Alert,
     KeyboardAvoidingView,
@@ -18,7 +18,16 @@ export default function LoginScreen() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
+ useEffect(() => {
+    (async () => {
+      try {
+        await account.getSession('current'); // throws if none
+        router.replace('/start');            // already authenticated
+      } catch {
+        // no session → stay on login
+      }
+    })();
+  }, []);
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
       Alert.alert("Error", "Please enter email and password");

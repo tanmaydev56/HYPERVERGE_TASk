@@ -9,7 +9,7 @@
       "appwriteProfilesCollectionId": "profiles",
       "appwriteKycCollectionId": "kyc_requests",
       "appwriteBucketId": "kyc_uploads",
-      "EXPO_PUBLIC_GEMINI_API_KEY":"AIzaSyBE8hmQE4qOXV5mSLgD8KgSrASJxpOyO60"
+      "EXPO_PUBLIC_GEMINI_API_KEY":"AIzaSyB2ms0Vf7wUVj4d183RgA_bhdPjDq5snTg"
       
     },
     "version": "1.0.0",
