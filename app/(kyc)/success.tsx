@@ -3,60 +3,9 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Banknote, Building, CheckCircle, Download, Languages, Phone } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-
+import { languageContentSuccess } from '@/constants/constant';
 // Language content definitions
-const languageContent = {
-  en: {
-    title: "Yes, your KYC is completed! ✅",
-    subtitle: "(Your verification was successful)",
-    audioMessage: "Audio message playing: 'KYC verified successfully'",
-    audioText: '"Your KYC has been completed successfully. You can now take loans and open bank accounts."',
-    sectionTitle: "Now you can: ",
-    loanTitle: "Take a loan ",
-    loanSubtitle: "(Get financial assistance)",
-    loanDetails: "Agriculture loan, business loan, personal loan",
-    bankTitle: "Open bank account ",
-    bankSubtitle: "(Start banking services)",
-    bankDetails: "Zero balance account, savings account, current account",
-    schemesTitle: "Get government schemes ",
-    schemesSubtitle: "(Access government programs)",
-    schemesDetails: "PM-KISAN, Crop Insurance, Mudra Loan, and more",
-    nextStepsTitle: "What to do next? ",
-    nextSteps: [
-      "Visit bank or talk to agent",
-      "Apply for loan",
-      "Get information about government schemes"
-    ],
-    helpText: "Need help? Our team will assist you",
-    doneButton: "Finish",
-    certificateText: "✅ Your KYC certificate will be ready in 2 hours"
-  },
-  hi: {
-    title: "जी, आपकी KYC पूरी हो गई है! ✅",
-    subtitle: "(Yes, your KYC is completed!)",
-    audioMessage: "Audio message playing: 'KYC verified successfully'",
-    audioText: '"आपकी KYC सफलतापूर्वक पूरी हो गई है। अब आप लोन ले सकते हैं और बैंक खाता खोल सकते हैं।"',
-    sectionTitle: "अब आप यह कर सकते हैं: ",
-    loanTitle: "लोन ले सकते हैं ",
-    loanSubtitle: "(You can take a loan)",
-    loanDetails: "Agriculture loan, business loan, personal loan",
-    bankTitle: "बैंक खाता खोल सकते हैं ",
-    bankSubtitle: "(You can open a bank account)",
-    bankDetails: "Zero balance account, savings account, current account",
-    schemesTitle: "सरकारी योजनाएं पा सकते हैं ",
-    schemesSubtitle: "(Get government schemes)",
-    schemesDetails: "PM-KISAN, Fasal Bima, Mudra Loan, and more",
-    nextStepsTitle: "आगे क्या करें? ",
-    nextSteps: [
-      "बैंक जाएं या एजेंट से बात करें",
-      "लोन के लिए आवेदन करें",
-      "सरकारी योजनाओं की जानकारी लें"
-    ],
-    helpText: "मदद चाहिए? हमारी टीम आपकी मदद करेगी",
-    doneButton: "समाप्त करें",
-    certificateText: "✅ आपका KYC प्रमाणपत्र 2 घंटे में तैयार हो जाएगा"
-  }
-};
+
 
 export default function SuccessScreen() {
   const params = useLocalSearchParams();
@@ -64,7 +13,7 @@ export default function SuccessScreen() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState<'en' | 'hi'>('hi');
 
-  const content = languageContent[currentLanguage];
+  const content = languageContentSuccess[currentLanguage];
 const confidence = params.confidence ? ` with ${params.confidence}% confidence` : '';
 
   // Play success voice message
@@ -107,9 +56,7 @@ const confidence = params.confidence ? ` with ${params.confidence}% confidence` 
        
       >
         <Languages size={24} color="#4B5563" />
-        <Text className="text-xs text-gray-600 mt-1 text-center">
-          {currentLanguage.toUpperCase()}
-        </Text>
+       
          
       </TouchableOpacity>
        

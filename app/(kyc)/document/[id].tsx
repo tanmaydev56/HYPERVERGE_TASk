@@ -1,5 +1,5 @@
 // app/kyc/[id].tsx
-import AIHelpButton,{analyzeDocumentWithGemini} from "@/components/AIHelpButton";
+import AIHelpButton,{analyzeDocumentWithGemini, analyzeKycBundle} from "@/components/AIHelpButton";
 import { addToQueue } from "@/lib/offlineQueues";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -166,11 +166,7 @@ const handleSubmit = async () => {
     }
 
     // Call Gemini AI for comprehensive KYC verification
-    const geminiResult = await analyzeDocumentWithGemini('kyc', JSON.stringify({
-      documents: documentImages,
-      selfie: selfieImageBase64
-    }));
-
+    const geminiResult = await analyzeKycBundle(documentImages, selfieImageBase64);
     if (geminiResult.kycStatus === 'approved') {
       // KYC Approved - Add to offline queue
       for (const [docType, uri] of Object.entries(documents)) {

@@ -1,211 +1,114 @@
-// components/AIHelpButton.tsx
-import { TouchableOpacity, Text, Alert, ActivityIndicator } from 'react-native';
-import { MessageCircle, ShieldAlert, ShieldCheck, FileText } from 'lucide-react-native';
+import { TouchableOpacity, Alert, ActivityIndicator } from 'react-native';
+import { MessageCircle } from 'lucide-react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState, useEffect } from 'react';
 import { convertImageToBase64 } from '@/lib/imageUtils';
 import { VerificationResult } from '@/constants/types';
 
-const GEMINI_API_KEY = 'AIzaSyAgqiXENXtrQ3CAHvk-zKanmzEIgCmizEw';
+const GEMINI_API_KEY = 'AIzaSyAgqiXENXtrQ3CAHvk-zKanmzEIgCmizEw'; // ← move to .env
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-export const analyzeDocumentWithGemini = async (documentType: string, imageBase64: string) => {
-  try {
-   const prompt = `
-Analyze this ${documentType} document for KYC verification. Be reasonable but thorough.
+/* ---------- 1.  SINGLE-DOC ANALYSIS  ---------- */
+export const analyzeDocumentWithGemini = async (
+  docType: 'aadhaar' | 'pan' | 'dl' | 'selfie',
+  imageBase64: string
+): Promise<VerificationResult> => {
+  const prompt = `You are an Indian KYC expert. Analyse the attached ${docType} image for:
+- Correct format & security features
+- Readable text / face visible (selfie)
+- No foreign logos / fake URLs
+Return **only** JSON:
+{"verified":bool,"confidence":0-100,"issues":[],"details":{"type":"${docType}","number":"...","name":"..."}}`;
 
-REALISTIC CHECKS FOR INDIAN DOCUMENTS:
-1. Basic format and structure matches genuine documents
-2. Presence of key information fields
-3. Readability and clarity of text
-4. No obvious fake websites or inappropriate content
-5. General consistency in the document
+  const res = await fetch(GEMINI_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }, { inline_data: { mime_type: 'image/jpeg', data: imageBase64 } }] }],
+    }),
+  });
 
-For Aadhaar: Look for 12-digit number pattern, Indian name, reasonable details
-For PAN: 10-character alphanumeric pattern, Indian name
-For Indian documents: Should not contain foreign commercial websites (.com, .cn, etc.)
-
-Be more lenient with:
-- Minor blurriness or lighting issues
-- Small alignment issues
-- Common document variations
-
-Be strict with:
-- Obviously fake websites/emails (taobao.com, alibaba.com, etc.)
-- Completely wrong number formats
-- Inconsistent country references
-
-Return JSON response with:
-- verified: boolean (true if it looks like a genuine attempt)
-- confidence: number (0-100)
-- issues: string[] (specific problems found)
-- details: { type: string, number: string, name: string }
-`;
-
-    const response = await fetch(GEMINI_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        contents: [{
-          parts: [
-            { text: prompt },
-            {
-              inline_data: {
-                mime_type: "image/jpeg",
-                data: imageBase64
-              }
-            }
-          ]
-        }]
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`API error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const resultText = data.candidates[0].content.parts[0].text;
-    
-    // Extract JSON from the response
-    const jsonMatch = resultText.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON.parse(jsonMatch[0]);
-    }
-    
-    throw new Error('Invalid response format from AI');
-  } catch (error) {
-    console.error('Gemini API error:', error);
-    throw new Error('AI verification service temporarily unavailable');
-  }
+  if (!res.ok) throw new Error(`Gemini ${res.status}`);
+  const raw = await res.json();
+  const text = raw.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
+  const json = text.match(/\{[\s\S]*\}/); // extract JSON blob
+  if (!json) throw new Error('No JSON from Gemini');
+  return JSON.parse(json[0]);
 };
 
+/* ---------- 2.  MULTI-DOC + SELFIE WRAPPER  ---------- */
+export const analyzeKycBundle = async (docs: Record<string, string>, selfieB64: string | null) => {
+  const docPromises = Object.entries(docs).map(([type, b64]) =>
+    analyzeDocumentWithGemini(type as any, b64)
+  );
+  const results = await Promise.all(docPromises);
+  const selfieResult = selfieB64
+    ? await analyzeDocumentWithGemini('selfie', selfieB64)
+    : { verified: true, confidence: 100, issues: [], details: { type: 'selfie' } };
 
+  const allOk = results.every(r => r.verified) && selfieResult.verified;
+  const avgConf = [...results, selfieResult].reduce((s, r) => s + r.confidence, 0) / (results.length + 1);
 
+  return {
+    kycStatus: allOk ? 'approved' : 'rejected',
+    confidence: Math.round(avgConf),
+    faceMatchConfidence: selfieResult.confidence,
+    issues: [...results, selfieResult].flatMap(r => r.issues),
+  };
+};
+
+/* ---------- 3.  UI BUTTON  ---------- */
 export default function AIHelpButton({ documentUri, onVerificationComplete }: {
   documentUri?: string | null;
   onVerificationComplete?: (result: VerificationResult) => void;
 }) {
   const params = useLocalSearchParams();
   const router = useRouter();
-  const currentStep = params.id as string || 'general';
-  const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationResults, setVerificationResults] = useState<{[key: string]: VerificationResult}>({});
+  const step = (params.id as string) || 'general';
+  const [verifying, setVerifying] = useState(false);
+  const [results, setResults] = useState<Record<string, VerificationResult>>({});
 
-  // Auto-verify when document is uploaded
   useEffect(() => {
-    if (documentUri && currentStep !== 'selfie' && currentStep !== 'general') {
-      verifyDocument();
-    }
+    if (documentUri && step !== 'selfie' && step !== 'general') verifyDoc();
   }, [documentUri]);
 
-  const verifyDocument = async () => {
-    if (!documentUri || !GEMINI_API_KEY) return;
-
-    setIsVerifying(true);
+  const verifyDoc = async () => {
+    if (!documentUri) return;
+    setVerifying(true);
     try {
-      const imageBase64 = await convertImageToBase64(documentUri);
-      const result = await analyzeDocumentWithGemini(currentStep, imageBase64);
-      
-      setVerificationResults(prev => ({
-        ...prev,
-        [currentStep]: result
-      }));
-
-      if (onVerificationComplete) {
-        onVerificationComplete(result);
-      }
-
-      if (result.verified) {
-        Alert.alert(
-          '✅ Document Verified',
-          `AI verification passed with ${result.confidence}% confidence`,
-          [{ text: 'Continue' }]
-        );
-      } else {
-        Alert.alert(
-          '❌ Verification Issues',
-          `Please check your document:\n${result.issues.join('\n• ')}`,
-          [{ text: 'Retry' }]
-        );
-      }
-    } catch (error) {
-      Alert.alert(
-        'Verification Error',
-        error instanceof Error ? error.message : 'Failed to verify document'
-      );
+      const b64 = await convertImageToBase64(documentUri);
+      const res = await analyzeDocumentWithGemini(step as any, b64);
+      setResults(prev => ({ ...prev, [step]: res }));
+      onVerificationComplete?.(res);
+      Alert.alert(res.verified ? '✅ Verified' : '❌ Issues', res.issues.join('\n• ') || 'Looks good!');
+    } catch (e: any) {
+      Alert.alert('Verification error', e.message);
     } finally {
-      setIsVerifying(false);
+      setVerifying(false);
     }
   };
 
-  const generateFinalReport = () => {
-    const allVerified = Object.values(verificationResults).every(result => result.verified);
-    const totalConfidence = Object.values(verificationResults).reduce((sum, result) => sum + result.confidence, 0);
-    const averageConfidence = totalConfidence / Object.keys(verificationResults).length;
-
-    if (allVerified && averageConfidence >= 80) {
-      Alert.alert(
-        '🎉 KYC APPROVED',
-        `All documents verified successfully!\n\nAverage confidence: ${Math.round(averageConfidence)}%\n\nYou can now proceed with submission.`,
-        [
-          {
-            text: 'Submit KYC',
-            onPress: () => router.push('/success')
-          }
-        ]
-      );
+  const finalReport = () => {
+    const allOk = Object.values(results).every(r => r.verified);
+    const avg = Object.values(results).reduce((s, r) => s + r.confidence, 0) / Object.keys(results).length || 0;
+    if (allOk && avg >= 80) {
+      Alert.alert('🎉 KYC Approved', `Avg confidence ${Math.round(avg)}%`, [{ text: 'Submit', onPress: () => router.push('/success') }]);
     } else {
-      const failedDocs = Object.entries(verificationResults)
-        .filter(([_, result]) => !result.verified)
-        .map(([doc]) => doc);
-
-      Alert.alert(
-        '❌ KYC REJECTED',
-        `Verification failed for: ${failedDocs.join(', ')}\n\nPlease re-upload the rejected documents and try again.`,
-        [{ text: 'OK' }]
-      );
+      const failed = Object.entries(results).filter(([, r]) => !r.verified).map(([k]) => k);
+      Alert.alert('❌ KYC Rejected', `Failed for: ${failed.join(', ')}`);
     }
   };
 
-  const showVerificationOptions = () => {
-    Alert.alert(
-      ' AI Document Verification',
-      'I can help verify your documents using advanced AI technology',
-      [
-        {
-          text: 'Verify Current Document',
-          onPress: verifyDocument,
-          style: 'default'
-        },
-        {
-          text: 'View Final Report',
-          onPress: generateFinalReport,
-          style: 'default'
-        },
-        {
-          text: 'Cancel',
-          style: 'cancel'
-        }
-      ]
-    );
-  };
+  const showMenu = () =>
+    Alert.alert('AI Help', '', [
+      { text: 'Verify current', onPress: verifyDoc },
+      { text: 'Final report', onPress: finalReport },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
 
   return (
-    <TouchableOpacity 
-      onPress={showVerificationOptions}
-      disabled={isVerifying}
-      className="  bg-blue-100 flex    p-3 rounded-full shadow-md z-10"
-    >
-      
-        {isVerifying ? (
-        <ActivityIndicator size="small" color="#1D4ED8" />
-      ) : (
-        <MessageCircle size={24} color="#1D4ED8" />
-      )}
-      
+    <TouchableOpacity onPress={showMenu} disabled={verifying} className="bg-blue-100 p-3 rounded-full shadow-md z-10">
+      {verifying ? <ActivityIndicator size="small" color="#1D4ED8" /> : <MessageCircle size={24} color="#1D4ED8" />}
     </TouchableOpacity>
   );
 }
