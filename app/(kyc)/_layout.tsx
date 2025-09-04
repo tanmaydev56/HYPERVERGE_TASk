@@ -1,12 +1,12 @@
 // app/_layout.tsx
 import { initQueue } from "@/lib/offlineQueues";
 import { Stack, useRouter } from "expo-router";
-import { StatusBar } from "expo-status-bar";
+
 import { useEffect } from "react";
 import "../globals.css";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { TouchableOpacity, View } from "react-native";
-import { ArrowLeft, LogOut } from "lucide-react-native";
+import {  LogOut } from "lucide-react-native";
 import { account } from "@/lib/appwrite";
 
 export default function RootLayout() {
@@ -29,7 +29,7 @@ export default function RootLayout() {
         
         
         {/* Logout button container - aligned to top-right */}
-        <View className="absolute top-16 right-6 z-50 p-2">
+        <View className="absolute top-[3.2rem] right-6 z-50 p-2">
           
           <TouchableOpacity 
             onPress={logout}

@@ -72,7 +72,7 @@ export default function MethodSelectionScreen() {
       {/* DigiLocker Option */}
       <TouchableOpacity
         className="bg-white rounded-2xl p-6 mb-4 border-2 border-blue-100 active:border-blue-300"
-        onPress={() => router.push("/(kyc)/success")}
+        onPress={() => router.push("/(kyc)/document/digilocker")}
        
       >
         <View className="flex-row items-center">

@@ -181,7 +181,7 @@ export default function AIHelpButton({ documentUri, onVerificationComplete }: {
 
   const showVerificationOptions = () => {
     Alert.alert(
-      '🤖 AI Document Verification',
+      ' AI Document Verification',
       'I can help verify your documents using advanced AI technology',
       [
         {

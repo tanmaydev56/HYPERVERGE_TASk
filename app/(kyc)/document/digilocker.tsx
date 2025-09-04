@@ -23,12 +23,12 @@ const DigiLockerScreen = () => {
   return (
     <View className="flex-1 bg-white">
       {/* Header */}
-      <View className="flex-row items-center p-6 border-b border-gray-200 bg-white">
+      <View className="flex-row items-center p-6  bg-white">
         <TouchableOpacity 
           onPress={() => router.back()}
           className="p-2 mr-4"
         >
-          <ArrowLeft size={24} color="#374151" />
+          <ArrowLeft size={26}   color="#374151" />
         </TouchableOpacity>
        
       </View>
