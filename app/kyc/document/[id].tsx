@@ -6,8 +6,7 @@ import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Camera, ChevronLeft, ChevronRight, Upload } from "lucide-react-native";
 import { useEffect, useState } from "react";
- import { GoogleGenerativeAI } from '@google/generative-ai';
-  
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
   Alert,
   Image,
