@@ -22,7 +22,7 @@ const DigiLockerScreen = () => {
 
   return (
     <View className="flex-1 bg-white">
-      {/* Header */}
+     
       <View className="flex-row items-center p-6  bg-white">
         <TouchableOpacity 
           onPress={() => router.back()}
@@ -34,7 +34,7 @@ const DigiLockerScreen = () => {
       </View>
 
       <ScrollView className="flex-1 p-6">
-        {/* Hero Section */}
+       
         <View className="items-center mb-8">
           <View className="bg-blue-100 p-6 rounded-full mb-4">
             <Shield size={48} color="#1D4ED8" />
@@ -47,7 +47,7 @@ const DigiLockerScreen = () => {
           </Text>
         </View>
 
-              {/* Get DigiLocker */}
+             
         <View className="bg-gray-50 rounded-2xl p-5 mb-6">
           <Text className="text-lg font-semibold text-gray-900 mb-3">Don't have DigiLocker?</Text>
           <TouchableOpacity 
@@ -83,8 +83,7 @@ const DigiLockerScreen = () => {
       
       </ScrollView>
 
-      {/* Fixed Button */}
-     
+    
     </View>
   )
 }

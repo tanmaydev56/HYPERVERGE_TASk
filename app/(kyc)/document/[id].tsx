@@ -25,13 +25,11 @@ import {
 export default function DocumentCollectionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  
   const [currentStep, setCurrentStep] = useState(0);
   const [documents, setDocuments] = useState<{[key: string]: string | null}>({
     aadhaar: null,
     pan: null,
     dl: null,
-   
     selfie: null,
   });
  
@@ -58,7 +56,7 @@ const openImagePicker = async () => {
     const isSelfieStep = currentDocument.id === "selfie";
     
     if (isSelfieStep) {
-      // For selfie, use camera
+      
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
       if (status !== "granted") {
         Alert.alert("Permission Required", "Camera permission is needed to take selfie");
@@ -84,7 +82,6 @@ const openImagePicker = async () => {
         }));
       }
     } else {
-      // For documents, use gallery
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (status !== "granted") {
         Alert.alert("Permission Required", "Gallery permission is needed to upload documents");
@@ -114,7 +111,7 @@ const openImagePicker = async () => {
         const result = await analyzeDocumentWithGemini(currentDocument.id, imageBase64);
         if (result && !result.verified) {
           Alert.alert(
-            '⚠️ Verification Issues',
+            ' Verification Issues',
             `Please check your ${currentDocument.name}:\n${result.issues.join('\n• ')}`
           );
         }
@@ -131,7 +128,7 @@ const openImagePicker = async () => {
   if (currentStep < DOCUMENT_STEPS.length - 1) {
     const nextStep = DOCUMENT_STEPS[currentStep + 1].id;
     setCurrentStep(prev => prev + 1);
-    router.setParams({ id: nextStep });   // ← keeps params.id synced
+    router.setParams({ id: nextStep });  
   }
 };
  const handlePrevious = () => {
@@ -149,7 +146,7 @@ const handleSubmit = async () => {
 
   setLoading(true);
   try {
-    /* ----- 1.  collect base64 ----- */
+    // 1.  collect base64 
     const documentImages: Record<string, string> = {};
     for (const [docType, uri] of Object.entries(documents)) {
       if (uri && docType !== 'selfie') {
@@ -158,7 +155,7 @@ const handleSubmit = async () => {
     }
     const selfieBase64 = documents.selfie ? await convertImageToBase64(documents.selfie) : null;
 
-    /* ----- 2.  Gemini bundle ----- */
+    //  2.  Gemini bundle 
     const geminiResult = await analyzeKycBundle(documentImages, selfieBase64);
 
    // 3.  individual results (real ones)
@@ -171,9 +168,9 @@ const selfieResult: VerificationResult = selfieBase64
   ? await analyzeDocumentWithGemini('selfie', selfieBase64)
   : { verified: true, confidence: 100, issues: [], details: { type: 'selfie' } };
 
-    /* ----- 4.  pass / fail ----- */
+    //  4.  pass / fail 
     if (isKycApproved([...docResults, selfieResult])) {
-    //  ----- SUCCESS ----- */
+    
       for (const [docType, uri] of Object.entries(documents)) {
         if (!uri) continue;
         await addToQueue(docType, {
@@ -195,7 +192,7 @@ const selfieResult: VerificationResult = selfieBase64
         },
       });
     } else {
-      /* ---------- FAILED ---------- */
+      
       router.replace({
         pathname: '/failed',
         params: {
@@ -215,10 +212,7 @@ const selfieResult: VerificationResult = selfieBase64
   }
 };
 
-
-  
   const progressFillWidth = `${(currentStep ) / DOCUMENT_STEPS.length * 100}%`;
-
 
   return (
     <KeyboardAvoidingView 
@@ -227,37 +221,39 @@ const selfieResult: VerificationResult = selfieBase64
     >
       
       
-      {/* Progress Header */}
-      <ProgressHeader currentStep={currentStep} DOCUMENT_STEPS={DOCUMENT_STEPS} currentDocument={currentDocument} progressFillWidth={progressFillWidth} /> 
-
+      
+      <ProgressHeader currentStep={currentStep}
+       DOCUMENT_STEPS={DOCUMENT_STEPS}
+        currentDocument={currentDocument}
+         progressFillWidth={progressFillWidth}
+          /> 
       <ScrollView className="flex-1 px-6 pt-6">
-        {/* Instructions */}
         <Text className="text-xl font-bold text-center mb-4">
           {currentDocument.name}
         </Text>
         <Text className="text-gray-600 text-center mb-6">
           {currentDocument.description}
         </Text>
-
-        
        <ImagePriew isSelfieStep={isSelfieStep}
         openImagePicker={openImagePicker}
          documents={documents}
-          currentDocument={currentDocument} />       
+          currentDocument={currentDocument}
+           />       
 
         
-       <Navagation currentStep={currentStep}
+       <Navagation 
+        currentStep={currentStep}
         handlePrevious={handlePrevious}
-         handleNext={handleNext}
-          documents={documents}
-           currentDocument={currentDocument} 
-           isLastStep={isLastStep} 
-       handleSubmit={handleSubmit}
+        handleNext={handleNext}
+        documents={documents}
+        currentDocument={currentDocument} 
+        isLastStep={isLastStep} 
+        handleSubmit={handleSubmit}
         allDocumentsUploaded={allDocumentsUploaded}
-         loading={loading}
+        loading={loading}
          />
        
-        {/* Document Status Overview */}
+        
         <View className="bg-gray-50 rounded-xl p-4 mb-8">
           <Text className="font-semibold mb-3">Document Status</Text>
           {DOCUMENT_STEPS.map((step, index) => (
