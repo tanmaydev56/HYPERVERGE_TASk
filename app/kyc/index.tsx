@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { LogOut } from "lucide-react-native";
-import { account } from "../lib/appwrite";
+import { account } from "../../lib/appwrite";
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -20,14 +20,7 @@ export default function HomeScreen() {
   }, []);
 
   /* Logout handler */
-  const logout = async () => {
-    try {
-      await account.deleteSession("current");
-      router.replace("/login");
-    } catch (err: any) {
-      alert("Logout failed: " + err.message);
-    }
-  };
+
 
   return (
     <View className="flex-1 bg-white px-6 pt-12">
@@ -36,9 +29,7 @@ export default function HomeScreen() {
         <Text className="flex-1 text-2xl font-bold text-gray-900">
           Dashboard
         </Text>
-        <TouchableOpacity onPress={logout}>
-          <LogOut size={24} color="#EF4444" />
-        </TouchableOpacity>
+       
       </View>
 
       <View className="flex-1 items-center justify-center">

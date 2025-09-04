@@ -6,7 +6,6 @@ import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Camera, ChevronLeft, ChevronRight, Upload } from "lucide-react-native";
 import { useEffect, useState } from "react";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 import {
   Alert,
   Image,
@@ -40,9 +39,6 @@ const DOCUMENT_STEPS = [
 export default function DocumentCollectionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
- 
-  // Initialize Gemini AI
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || 'AIzaSyAgqiXENXtrQ3CAHvk-zKanmzEIgCmizEw');
   
   const [currentStep, setCurrentStep] = useState(0);
   const [documents, setDocuments] = useState<{[key: string]: string | null}>({
@@ -140,83 +136,7 @@ const openImagePicker = async () => {
 // Add this verifyDocumentInstantly function (place it near your other functions)
 const verifyDocumentInstantly = async (docType: string, uri: string): Promise<any> => {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
-    
-    // Get the image data from URI
-    const imageData = await fetch(uri).then(res => res.arrayBuffer());
-    
-    // Document-specific prompts
-    const prompts = {
-      aadhaar: `Analyze this Aadhaar card image. Check for: 
-      1. Document clarity and readability
-      2. Aadhaar number visibility (12 digits)
-      3. Name visibility
-      4. Any blurriness or obstruction
-      5. Overall document quality
-      
-      Respond with JSON format: {verified: boolean, confidence: number, issues: string[], details: {type: string, number: string, name: string}}`,
-      
-      pan: `Analyze this PAN card image. Check for:
-      1. PAN number clarity (10 characters)
-      2. Name visibility
-      3. Father's name visibility
-      4. Date of birth clarity
-      5. Photo quality
-      6. Signature visibility
-      
-      Respond with JSON format: {verified: boolean, confidence: number, issues: string[], details: {type: string, number: string, name: string}}`,
-      
-      dl: `Analyze this Driving License image. Check for:
-      1. License number clarity
-      2. Name visibility
-      3. Date of birth and validity
-      4. Address visibility
-      5. Photo quality
-      6. Any security features
-      
-      Respond with JSON format: {verified: boolean, confidence: number, issues: string[], details: {type: string, number: string, name: string}}`
-    };
-
-    const prompt = prompts[docType as keyof typeof prompts] || `Analyze this ${docType} document for quality and readability. Respond with JSON format: {verified: boolean, confidence: number, issues: string[], details: {type: string}}`;
-
-    const result = await model.generateContent([
-      prompt,
-      {
-        inlineData: {
-          data: Buffer.from(imageData).toString('base64'),
-          mimeType: 'image/jpeg'
-        }
-      }
-    ]);
-
-    const response = await result.response;
-    const text = response.text();
-    
-    // Parse the JSON response from Gemini
-    let parsedResult;
-    try {
-      parsedResult = JSON.parse(text.replace(/```json|```/g, '').trim());
-    } catch (e) {
-      // Fallback if JSON parsing fails
-      parsedResult = {
-        verified: false,
-        confidence: 0,
-        issues: ['Failed to parse AI response'],
-        details: { type: docType }
-      };
-    }
-
-    // Update verification results state
-    setVerificationResults(prev => ({
-      ...prev,
-      [docType]: parsedResult
-    }));
-
-    return parsedResult;
-
-  } catch (error) {
-    console.error('Instant verification failed:', error);
-    // Fallback to simulation if API fails
+    // Simulate verification for demo - replace with actual Gemini API when ready
     await new Promise(resolve => setTimeout(resolve, 1000));
     
     const results = {
@@ -238,6 +158,7 @@ const verifyDocumentInstantly = async (docType: string, uri: string): Promise<an
         issues: Math.random() > 0.2 ? [] : ['License number unclear', 'Expiry date not visible'],
         details: { type: 'Driving License', number: 'DL1420110012345', name: 'John Doe' }
       },
+      
     };
 
     const result = results[docType as keyof typeof results] || { 
@@ -247,103 +168,20 @@ const verifyDocumentInstantly = async (docType: string, uri: string): Promise<an
       details: { type: docType }
     };
     
+    // Update verification results state
     setVerificationResults(prev => ({
       ...prev,
       [docType]: result
     }));
 
     return result;
-  }
-};
-
-const analyzeWithGeminiAI = async (documentImages: {[key: string]: string}, selfieImage: string | null): Promise<{
-  kycStatus: 'approved' | 'rejected';
-  confidence: number;
-  faceMatchConfidence?: number;
-  rejectionReason?: string;
-  issues: string[];
-}> => {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
-    
-    // Prepare all images for analysis
-    const imageParts = await Promise.all(
-      Object.entries(documentImages).map(async ([docType, uri]) => {
-        const imageData = await fetch(uri).then(res => res.arrayBuffer());
-        return {
-          inlineData: {
-            data: Buffer.from(imageData).toString('base64'),
-            mimeType: 'image/jpeg'
-          }
-        };
-      })
-    );
-
-    // Add selfie if available
-    if (selfieImage) {
-      const selfieData = await fetch(selfieImage).then(res => res.arrayBuffer());
-      imageParts.push({
-        inlineData: {
-          data: Buffer.from(selfieData).toString('base64'),
-          mimeType: 'image/jpeg'
-        }
-      });
-    }
-
-    const prompt = `Perform comprehensive KYC analysis on these documents and selfie. Evaluate:
-
-    1. DOCUMENT AUTHENTICITY:
-    - Check security features on all documents
-    - Verify consistency across different documents
-    - Detect any signs of tampering or forgery
-
-    2. DATA QUALITY:
-    - Assess readability of all information
-    - Check for completeness of required fields
-    - Verify document validity dates
-
-    3. FACE MATCHING (if selfie provided):
-    - Compare selfie with photos on documents
-    - Verify liveliness and quality of selfie
-
-    4. OVERALL ASSESSMENT:
-    - Provide confidence score (0-100)
-    - List any issues or concerns
-    - Make approval/rejection recommendation
-
-    Respond with JSON format: {
-      kycStatus: "approved" | "rejected",
-      confidence: number,
-      faceMatchConfidence?: number,
-      rejectionReason?: string,
-      issues: string[]
-    }`;
-
-    const result = await model.generateContent([prompt, ...imageParts]);
-    const response = await result.response;
-    const text = response.text();
-    
-    // Parse the JSON response
-    try {
-      const analysisResult = JSON.parse(text.replace(/```json|```/g, '').trim());
-      return analysisResult;
-    } catch (e) {
-      throw new Error('Failed to parse AI response');
-    }
-
   } catch (error) {
-    console.error('Gemini AI analysis failed:', error);
-    
-    // Fallback to basic verification if AI fails
-    const allVerified = Object.values(verificationResults).every(result => result?.verified);
-    const hasSelfie = selfieImage !== null;
-    
+    console.error('Instant verification failed:', error);
     return {
-      kycStatus: allVerified ? 'approved' : 'rejected',
-      confidence: allVerified ? 85 : 40,
-      faceMatchConfidence: hasSelfie ? (allVerified ? 80 : 50) : undefined,
-      rejectionReason: allVerified ? undefined : 'Basic verification failed',
-      issues: allVerified ? [] : ['Manual verification required', 'AI analysis failed']
+      verified: false,
+      confidence: 0,
+      issues: ['Verification service unavailable'],
+      details: { type: docType }
     };
   }
 };
@@ -450,7 +288,71 @@ const handleSubmit = async () => {
   }
 };
 
+// Gemini AI Analysis Function
+const analyzeWithGeminiAI = async (documentImages: {[key: string]: string}, selfieImage: string | null): Promise<{
+  kycStatus: 'approved' | 'rejected';
+  confidence: number;
+  faceMatchConfidence?: number;
+  rejectionReason?: string;
+  issues: string[];
+}> => {
+  try {
+    // Simulate Gemini AI analysis (replace with actual API call)
+    console.log('Analyzing documents with Gemini AI...');
+    
+    // Simulate processing time
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
+   
+    const isApproved = Math.random() > 0.2;
+    
+    if (isApproved) {
+      return {
+        kycStatus: 'approved',
+        confidence: Math.floor(Math.random() * 20) + 80, // 80-99%
+        faceMatchConfidence: Math.floor(Math.random() * 20) + 75, // 75-94%
+        issues: []
+      };
+    } else {
+      const rejectionReasons = [
+        "Document quality issues",
+        "Face mismatch detected",
+        "Document authenticity concerns",
+        "Information inconsistency across documents",
+        "Poor selfie quality"
+      ];
+      
+      const issues = [
+        "Aadhaar document blurry",
+        "PAN card number not clear",
+        "Selfie doesn't match document photo",
+        "Driving license expired",
+        "Voter ID information incomplete"
+      ];
+
+      return {
+        kycStatus: 'rejected',
+        confidence: Math.floor(Math.random() * 40) + 30, // 30-69%
+        rejectionReason: rejectionReasons[Math.floor(Math.random() * rejectionReasons.length)],
+        issues: issues.slice(0, Math.floor(Math.random() * 3) + 1) // 1-3 issues
+      };
+    }
+
+  } catch (error) {
+    console.error('Gemini AI analysis failed:', error);
+    // Fallback to basic verification if AI fails
+    const allVerified = Object.values(verificationResults).every(result => result?.verified);
+    
+    return {
+      kycStatus: allVerified ? 'approved' : 'rejected',
+      confidence: allVerified ? 85 : 40,
+      rejectionReason: allVerified ? undefined : 'Basic verification failed',
+      issues: allVerified ? [] : ['Manual verification required']
+    };
+  }
+};
+
+// Add this new function for final face matching
 
   
   const progressFillWidth = `${(currentStep ) / DOCUMENT_STEPS.length * 100}%`;
@@ -577,7 +479,7 @@ const handleSubmit = async () => {
             </TouchableOpacity>
           )}
         </View>
-          
+       
         {/* Document Status Overview */}
         <View className="bg-gray-50 rounded-xl p-4 mb-8">
           <Text className="font-semibold mb-3">Document Status</Text>
@@ -594,7 +496,8 @@ const handleSubmit = async () => {
         </View>
        
       </ScrollView>
-      <AIHelpButton 
+    
+         <AIHelpButton 
   documentUri={documents[currentDocument.id]}
   onVerificationComplete={(result) => {
     setVerificationResults(prev => ({

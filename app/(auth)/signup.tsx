@@ -1,16 +1,15 @@
 //app/signup.tsx
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
+    Alert,
+    KeyboardAvoidingView,
+    Platform,
+    Text,
+    TextInput,
+    TouchableOpacity
 } from "react-native";
-import { useRouter } from "expo-router";
-import { account, ID } from "../lib/appwrite";
+import { account, ID } from "../../lib/appwrite";
 
 export default function SignupScreen() {
   const [email, setEmail] = useState("");
