@@ -11,17 +11,17 @@ const languageContent = {
     subtitle: "(Your verification was successful)",
     audioMessage: "Audio message playing: 'KYC verified successfully'",
     audioText: '"Your KYC has been completed successfully. You can now take loans and open bank accounts."',
-    sectionTitle: "Now you can: 📋",
-    loanTitle: "Take a loan 💰",
+    sectionTitle: "Now you can: ",
+    loanTitle: "Take a loan ",
     loanSubtitle: "(Get financial assistance)",
     loanDetails: "Agriculture loan, business loan, personal loan",
-    bankTitle: "Open bank account 🏦",
+    bankTitle: "Open bank account ",
     bankSubtitle: "(Start banking services)",
     bankDetails: "Zero balance account, savings account, current account",
-    schemesTitle: "Get government schemes 🌾",
+    schemesTitle: "Get government schemes ",
     schemesSubtitle: "(Access government programs)",
     schemesDetails: "PM-KISAN, Crop Insurance, Mudra Loan, and more",
-    nextStepsTitle: "What to do next? 📞",
+    nextStepsTitle: "What to do next? ",
     nextSteps: [
       "Visit bank or talk to agent",
       "Apply for loan",
@@ -36,17 +36,17 @@ const languageContent = {
     subtitle: "(Yes, your KYC is completed!)",
     audioMessage: "Audio message playing: 'KYC verified successfully'",
     audioText: '"आपकी KYC सफलतापूर्वक पूरी हो गई है। अब आप लोन ले सकते हैं और बैंक खाता खोल सकते हैं।"',
-    sectionTitle: "अब आप यह कर सकते हैं: 📋",
-    loanTitle: "लोन ले सकते हैं 💰",
+    sectionTitle: "अब आप यह कर सकते हैं: ",
+    loanTitle: "लोन ले सकते हैं ",
     loanSubtitle: "(You can take a loan)",
     loanDetails: "Agriculture loan, business loan, personal loan",
-    bankTitle: "बैंक खाता खोल सकते हैं 🏦",
+    bankTitle: "बैंक खाता खोल सकते हैं ",
     bankSubtitle: "(You can open a bank account)",
     bankDetails: "Zero balance account, savings account, current account",
-    schemesTitle: "सरकारी योजनाएं पा सकते हैं 🌾",
+    schemesTitle: "सरकारी योजनाएं पा सकते हैं ",
     schemesSubtitle: "(Get government schemes)",
     schemesDetails: "PM-KISAN, Fasal Bima, Mudra Loan, and more",
-    nextStepsTitle: "आगे क्या करें? 📞",
+    nextStepsTitle: "आगे क्या करें? ",
     nextSteps: [
       "बैंक जाएं या एजेंट से बात करें",
       "लोन के लिए आवेदन करें",
@@ -98,11 +98,12 @@ const confidence = params.confidence ? ` with ${params.confidence}% confidence` 
   };
 
   return (
+    
     <ScrollView className="flex-1 bg-green-50">
     
       <TouchableOpacity 
         onPress={toggleLanguage}
-        className="absolute top-4 right-4 z-50 bg-white p-3 rounded-full shadow-md border border-gray-200"
+        className="absolute top-5 left-5 z-50 bg-white p-3 rounded-full shadow-md border border-gray-200"
        
       >
         <Languages size={24} color="#4B5563" />

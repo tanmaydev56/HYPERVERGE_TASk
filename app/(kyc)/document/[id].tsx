@@ -377,7 +377,7 @@ const analyzeWithGeminiAI = async (documentImages: {[key: string]: string}, self
         {/* Progress Bar */}
         <View className="bg-white/30 rounded-full h-2 mb-2">
     <View
-      className="bg-green-500 rounded-full h-2"   // <- green fill
+      className="bg-green-500 rounded-full h-2 "
       style={{ width: progressFillWidth }}
     />
       </View>

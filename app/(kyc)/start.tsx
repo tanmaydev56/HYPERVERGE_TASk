@@ -26,7 +26,7 @@ export default function MethodSelectionScreen() {
       {/* Process Overview */}
       <View className="bg-white rounded-2xl p-6 mb-6 border border-gray-100">
         <Text className="text-xl font-semibold text-center mb-4 text-gray-900">
-          📋 What You'll Need
+           What You'll Need
         </Text>
         
         <View className="space-y-3">
@@ -72,7 +72,7 @@ export default function MethodSelectionScreen() {
       {/* DigiLocker Option */}
       <TouchableOpacity
         className="bg-white rounded-2xl p-6 mb-4 border-2 border-blue-100 active:border-blue-300"
-        onPress={() => router.push("/(kyc)/document/digilocker")}
+        onPress={() => router.push("/(kyc)/success")}
        
       >
         <View className="flex-row items-center">
