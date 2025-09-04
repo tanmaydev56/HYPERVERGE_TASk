@@ -46,6 +46,11 @@ export default function DocumentCollectionScreen() {
       router.back();
     }
   }, [id]);
+  
+  useEffect(() => {
+  const expectedId = DOCUMENT_STEPS[currentStep].id;
+  if (id !== expectedId) router.setParams({ id: expectedId });
+}, [currentStep]);
 
 const openImagePicker = async () => {
   try {
@@ -121,18 +126,20 @@ const openImagePicker = async () => {
 
 
 
-  const handleNext = () => {
-    if (currentStep < DOCUMENT_STEPS.length - 1) {
-      setCurrentStep(prev => prev + 1);
-    }
-  };
-
-  const handlePrevious = () => {
-    if (currentStep > 0) {
-      setCurrentStep(prev => prev - 1);
-    }
-  };
-
+ const handleNext = () => {
+  if (currentStep < DOCUMENT_STEPS.length - 1) {
+    const nextStep = DOCUMENT_STEPS[currentStep + 1].id;
+    setCurrentStep(prev => prev + 1);
+    router.setParams({ id: nextStep });   // ← keeps params.id synced
+  }
+};
+ const handlePrevious = () => {
+  if (currentStep > 0) {
+    const prevStep = DOCUMENT_STEPS[currentStep - 1].id;
+    setCurrentStep(prev => prev - 1);
+    router.setParams({ id: prevStep });
+  }
+};
 const handleSubmit = async () => {
   if (!allDocumentsUploaded) {
     Alert.alert("Incomplete", "Please upload all required documents before submitting.");

@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { convertImageToBase64 } from '@/lib/imageUtils';
 import { VerificationResult } from '@/constants/types';
 
-const GEMINI_API_KEY = 'AIzaSyAgqiXENXtrQ3CAHvk-zKanmzEIgCmizEw'; // ← move to .env
+const GEMINI_API_KEY = 'AIzaSyBE8hmQE4qOXV5mSLgD8KgSrASJxpOyO60'; // ← move to .env
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 /* ---------- 1.  SINGLE-DOC ANALYSIS  ---------- */
@@ -13,11 +13,13 @@ export const analyzeDocumentWithGemini = async (
   docType: 'aadhaar' | 'pan' | 'dl' | 'selfie',
   imageBase64: string
 ): Promise<VerificationResult> => {
-  const prompt = `You are an Indian KYC expert. Analyse the attached ${docType} image for:
-- Correct format & security features
-- Readable text / face visible (selfie)
-- No foreign logos / fake URLs
-Return **only** JSON:
+const prompt = `You are an Indian KYC expert.  
+Check the ${docType} image quickly:
+- Is it clearly readable?
+- Are Indian names / numbers present?
+- No foreign logo, fake URL, or completely wrong layout?
+
+Return ONLY JSON:
 {"verified":bool,"confidence":0-100,"issues":[],"details":{"type":"${docType}","number":"...","name":"..."}}`;
 
   const res = await fetch(GEMINI_API_URL, {
