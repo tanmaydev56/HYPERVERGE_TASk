@@ -4,7 +4,6 @@ import { Banknote, Building, CheckCircle, Download, Languages, Phone } from "luc
 import { useEffect, useState } from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { languageContentSuccess } from '@/constants/constant';
-// Language content definitions
 
 
 export default function SuccessScreen() {
@@ -16,11 +15,11 @@ export default function SuccessScreen() {
   const content = languageContentSuccess[currentLanguage];
 const confidence = params.confidence ? ` with ${params.confidence}% confidence` : '';
 
-  // Play success voice message
+ 
    useEffect(() => {
     const playSuccessSound = async () => {
       try {
-        // Using expo-audio instead of expo-av
+       
         const sound = new Audio.Sound();
         
        
@@ -62,7 +61,7 @@ const confidence = params.confidence ? ` with ${params.confidence}% confidence` 
        
 
       <View className="flex-1 justify-center items-center p-6 min-h-screen pt-16">
-        {/* Success Header */}
+     
         <View className="items-center mb-8">
           <CheckCircle size={80} color="#22C55E" />
           <Text className="text-3xl font-bold mt-4 text-center text-green-800">
@@ -89,13 +88,13 @@ const confidence = params.confidence ? ` with ${params.confidence}% confidence` 
           </Text>
         </View>
 
-        {/* What You Can Do Now */}
+       
         <View className="bg-white rounded-2xl p-6 mb-6 w-full border border-green-100">
           <Text className="text-xl font-bold text-center text-gray-900 mb-4">
             {content.sectionTitle}
           </Text>
 
-          {/* Loan Option */}
+       
           <TouchableOpacity 
             className="bg-blue-50 rounded-xl p-4 mb-4 border border-blue-100 active:bg-blue-100"
             onPress={() => console.log("Loan option selected")}
@@ -116,7 +115,7 @@ const confidence = params.confidence ? ` with ${params.confidence}% confidence` 
             </View>
           </TouchableOpacity>
 
-          {/* Bank Account Option */}
+       
           <TouchableOpacity 
             className="bg-green-50 rounded-xl p-4 mb-4 border border-green-100 active:bg-green-100"
             onPress={() => console.log("Bank account option selected")}
@@ -137,7 +136,7 @@ const confidence = params.confidence ? ` with ${params.confidence}% confidence` 
             </View>
           </TouchableOpacity>
 
-          {/* Government Schemes */}
+          
           <TouchableOpacity 
             className="bg-yellow-50 rounded-xl p-4 border border-yellow-100 active:bg-yellow-100"
             onPress={() => console.log("Govt schemes selected")}
@@ -159,7 +158,7 @@ const confidence = params.confidence ? ` with ${params.confidence}% confidence` 
           </TouchableOpacity>
         </View>
 
-        {/* Next Steps */}
+        
         <View className="bg-white rounded-2xl p-6 mb-6 w-full border border-gray-100">
           <Text className="text-lg font-semibold text-center text-gray-900 mb-4">
             {content.nextStepsTitle}
@@ -176,7 +175,7 @@ const confidence = params.confidence ? ` with ${params.confidence}% confidence` 
 
        
 
-        {/* Done Button */}
+        
         <TouchableOpacity 
           onPress={() => router.replace('/')}
           className="bg-green-600 px-8 py-4 rounded-xl w-full active:bg-green-700"

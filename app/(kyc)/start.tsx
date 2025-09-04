@@ -5,12 +5,8 @@ import { Smartphone, FileText, Shield, Clock, CheckCircle } from "lucide-react-n
 
 export default function MethodSelectionScreen() {
   const router = useRouter();
-
   return (
-     
-    <ScrollView className="flex-1 bg-blue-50 p-6" >
-      {/* Header Section */}
-      
+    <ScrollView className="flex-1 bg-blue-50 p-6" >  
       <View className="items-center mt-10 mb-8">
         <View className="bg-blue-100 p-4 rounded-full mb-4">
           <Shield size={40} color="#1D4ED8" />
@@ -23,7 +19,7 @@ export default function MethodSelectionScreen() {
         </Text>
       </View>
 
-      {/* Process Overview */}
+     
       <View className="bg-white rounded-2xl p-6 mb-6 border border-gray-100">
         <Text className="text-xl font-semibold text-center mb-4 text-gray-900">
            What You'll Need
@@ -50,7 +46,7 @@ export default function MethodSelectionScreen() {
         </View>
       </View>
 
-      {/* Time Estimate */}
+      
       <View className="bg-blue-50 rounded-2xl p-5 mb-6 border border-blue-100">
         <View className="flex-row items-center justify-center mb-2">
           <Clock size={20} color="#1D4ED8" />
@@ -63,13 +59,13 @@ export default function MethodSelectionScreen() {
         </Text>
       </View>
 
-      {/* Verification Options */}
+
      
       <Text className="text-lg font-semibold text-center mb-4 text-gray-900">
         Choose Verification Method
       </Text>
 
-      {/* DigiLocker Option */}
+      
       <TouchableOpacity
         className="bg-white rounded-2xl p-6 mb-4 border-2 border-blue-100 active:border-blue-300"
         onPress={() => router.push("/(kyc)/document/digilocker")}
@@ -94,7 +90,7 @@ export default function MethodSelectionScreen() {
         </View>
       </TouchableOpacity>
 
-      {/* Document Upload Option */}
+    
       <TouchableOpacity
         className="bg-white rounded-2xl p-6 mb-6 border-2 border-gray-100 active:border-gray-300"
         onPress={() => router.push("/(kyc)/document/aadhaar")}
@@ -118,13 +114,8 @@ export default function MethodSelectionScreen() {
         </View>
        
       </TouchableOpacity>
-     
-<View className="h-20" >
-
-  </View> 
-      
-
-    
+     <View className="h-20" /> 
+   
     </ScrollView>
    
   );

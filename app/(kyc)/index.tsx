@@ -1,14 +1,14 @@
 // app/index.tsx
 import { useEffect, useState } from "react";
-import { View, Text, TouchableOpacity, ActivityIndicator } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
-import { User, Shield, LogOut } from "lucide-react-native";
-
-import { account, models } from "../../lib/appwrite";
+import { User, Shield } from "lucide-react-native";
+import {Models} from "appwrite";
+import { account } from "../../lib/appwrite";
 
 export default function HomeScreen() {
   const router = useRouter();
-  const [user, setUser] = useState<models.User<models.Preferences> | null>(null);
+  const [user, setUser] = useState<Models.User<Models.Preferences> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -31,7 +31,7 @@ export default function HomeScreen() {
 
   return (
     <View className="flex-1 bg-white px-6 pt-6">
-      {/* Header with User Info */}
+    
       <View className="flex-row items-center justify-between mb-8">
         <View className="flex-row items-center">
           <View className="bg-blue-100 p-3 rounded-full mr-3">
@@ -50,9 +50,9 @@ export default function HomeScreen() {
       
       </View>
 
-      {/* Main Content */}
+      
       <View className="flex-1 items-center justify-center">
-        {/* Welcome Message */}
+        
         <View className="items-center mb-8">
           <View className="bg-blue-50 p-4 rounded-full mb-4">
             <Shield size={40} color="#3B82F6" />
@@ -65,7 +65,6 @@ export default function HomeScreen() {
           </Text>
         </View>
 
-        {/* User Stats Card */}
         <View className="bg-blue-50 rounded-xl p-5 mb-8 w-full border border-blue-200">
           <Text className="text-lg font-semibold text-blue-900 mb-3">Your Status</Text>
           <View className="flex-row justify-between">
@@ -84,7 +83,6 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Start KYC Button */}
         <TouchableOpacity
           className="bg-blue-600 px-8 py-4 rounded-xl w-full items-center shadow-lg"
           onPress={() => router.push("/start")}
@@ -94,11 +92,9 @@ export default function HomeScreen() {
           <Text className="text-blue-100 text-sm mt-1">Takes 5-7 minutes</Text>
         </TouchableOpacity>
 
-        {/* Quick Actions */}
+      
         
       </View>
-
-      {/* Footer */}
       <View className="pb-6">
         <Text className="text-center text-gray-400 text-xs">
           Last login: {new Date().toLocaleDateString()}
