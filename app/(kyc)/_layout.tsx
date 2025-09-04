@@ -1,7 +1,6 @@
 // app/_layout.tsx
 import { initQueue } from "@/lib/offlineQueues";
 import { Stack, useRouter } from "expo-router";
-
 import { useEffect } from "react";
 import "../globals.css";
 import { SafeAreaView } from "react-native-safe-area-context";

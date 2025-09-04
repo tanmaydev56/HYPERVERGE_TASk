@@ -29,7 +29,7 @@ export default function LoginScreen() {
     
     try {
       await account.createEmailPasswordSession(email.trim(), password.trim());
-      router.replace("/start"); // or /profile-setup if you prefer
+      router.replace("/start"); 
     } catch (err: any) {
       Alert.alert("Login failed", err.message);
     } finally {
