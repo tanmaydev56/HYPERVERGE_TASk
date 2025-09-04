@@ -1,5 +1,5 @@
 // app/kyc/[id].tsx
-import AIHelpButton from "@/components/AIHelpButton";
+import AIHelpButton,{analyzeDocumentWithGemini} from "@/components/AIHelpButton";
 import { addToQueue } from "@/lib/offlineQueues";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
@@ -53,7 +53,7 @@ export default function DocumentCollectionScreen() {
     { id: "selfie", name: "Selfie", description: "Upload a clear image of yourself" },
   ];
   const [loading, setLoading] = useState(false);
-const [verificationResults, setVerificationResults] = useState<{[key: string]: VerificationResult}>({});
+  const [verificationResults, setVerificationResults] = useState<{[key: string]: VerificationResult}>({});
   const currentDocument = DOCUMENT_STEPS[currentStep];
   const isLastStep = currentStep === DOCUMENT_STEPS.length - 1;
   const isSelfieStep = currentDocument.id === "selfie";
@@ -122,8 +122,8 @@ const openImagePicker = async () => {
           [currentDocument.id]: compressed.uri
         }));
 
-        // Instant verification for documents (not selfie)
-        const result = await verifyDocumentInstantly(currentDocument.id, compressed.uri);
+        const imageBase64 = await convertImageToBase64(compressed.uri);
+        const result = await analyzeDocumentWithGemini(currentDocument.id, imageBase64);
         if (result && !result.verified) {
           Alert.alert(
             '⚠️ Verification Issues',
@@ -137,58 +137,7 @@ const openImagePicker = async () => {
   }
 };
 
-// Add this verifyDocumentInstantly function (place it near your other functions)
-const verifyDocumentInstantly = async (docType: string, uri: string): Promise<any> => {
-  try {
-    // Simulate verification for demo - replace with actual Gemini API when ready
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    const results = {
-      aadhaar: { 
-        verified: Math.random() > 0.2, 
-        confidence: Math.floor(Math.random() * 30) + 70,
-        issues: Math.random() > 0.2 ? [] : ['Document blurry', 'Number not fully visible'],
-        details: { type: 'Aadhaar', number: '123456789012', name: 'John Doe' }
-      },
-      pan: { 
-        verified: Math.random() > 0.2,
-        confidence: Math.floor(Math.random() * 30) + 70,
-        issues: Math.random() > 0.2 ? [] : ['PAN number unclear', 'Name not readable'],
-        details: { type: 'PAN', number: 'ABCDE1234F', name: 'John Doe' }
-      },
-      dl: { 
-        verified: Math.random() > 0.2,
-        confidence: Math.floor(Math.random() * 30) + 70,
-        issues: Math.random() > 0.2 ? [] : ['License number unclear', 'Expiry date not visible'],
-        details: { type: 'Driving License', number: 'DL1420110012345', name: 'John Doe' }
-      },
-      
-    };
 
-    const result = results[docType as keyof typeof results] || { 
-      verified: false, 
-      confidence: 0, 
-      issues: ['Unknown document type'],
-      details: { type: docType }
-    };
-    
-    // Update verification results state
-    setVerificationResults(prev => ({
-      ...prev,
-      [docType]: result
-    }));
-
-    return result;
-  } catch (error) {
-    console.error('Instant verification failed:', error);
-    return {
-      verified: false,
-      confidence: 0,
-      issues: ['Verification service unavailable'],
-      details: { type: docType }
-    };
-  }
-};
 
   const handleNext = () => {
     if (currentStep < DOCUMENT_STEPS.length - 1) {

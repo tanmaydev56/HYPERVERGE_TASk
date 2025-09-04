@@ -8,7 +8,7 @@ import { convertImageToBase64 } from '@/lib/imageUtils';
 const GEMINI_API_KEY = 'AIzaSyAgqiXENXtrQ3CAHvk-zKanmzEIgCmizEw';
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
-const analyzeDocumentWithGemini = async (documentType: string, imageBase64: string) => {
+export const analyzeDocumentWithGemini = async (documentType: string, imageBase64: string) => {
   try {
    const prompt = `
 Analyze this ${documentType} document for KYC verification. Be reasonable but thorough.
