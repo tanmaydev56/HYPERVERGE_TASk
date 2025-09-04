@@ -1,13 +1,8 @@
 import {  Text, View } from 'react-native'
 import React from 'react'
-interface PROPS{
-    currentStep:number,
-    DOCUMENT_STEPS:{id:string,name:string,description:string}[],
-    currentDocument:{id:string,name:string,description:string},
-    progressFillWidth:string
-}
+import { PROPSPROGRESSHEADER } from '@/constants/types'
 
-const ProgressHeader = ({currentStep,DOCUMENT_STEPS,currentDocument,progressFillWidth}:PROPS) => {
+const ProgressHeader = ({currentStep,DOCUMENT_STEPS,currentDocument,progressFillWidth}:PROPSPROGRESSHEADER) => {
 
   return (
      <View className="bg-primary px-6 pt-12 pb-4">

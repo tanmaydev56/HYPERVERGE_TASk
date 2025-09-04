@@ -1,15 +1,14 @@
 // components/FaceLivenessCamera.tsx
-import React, { useRef, useState } from "react";
+import React, { useRef, } from "react";
 import { View, Text, TouchableOpacity, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as FileSystem from "expo-file-system";
+import { PropsCAMERA } from "@/constants/types";
 
-interface Props {
-  onCapture: (uri: string) => void;
-}
 
-export default function FaceLivenessCamera({ onCapture }: Props) {
+
+export default function FaceLivenessCamera({ onCapture }: PropsCAMERA) {
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
 

@@ -4,34 +4,21 @@ import { addToQueue } from "@/lib/offlineQueues";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
-
 import { useEffect, useState } from "react";
 import {
   Alert,
-  
   KeyboardAvoidingView, Platform,
   ScrollView,
   Text,
   View,
 } from "react-native";
-
 import { convertImageToBase64 } from '@/lib/imageUtils';
 import ProgressHeader from "@/components/ProgressHeader";
 import ImagePriew from "@/components/ImagePriew";
 import Navagation from "@/components/Navagation";
+import { VerificationResult } from "@/constants/types";
+import { DOCUMENT_STEPS } from "@/constants/constant";
 
-// Add interface at top
-interface VerificationResult {
-  verified: boolean;
-  confidence: number;
-  issues: string[];
-  details: {
-    type: string;
-    number?: string;
-    name?: string;
-    validity?: string;
-  };
-}
 
 
 export default function DocumentCollectionScreen() {
@@ -46,12 +33,7 @@ export default function DocumentCollectionScreen() {
    
     selfie: null,
   });
-  const DOCUMENT_STEPS = [
-    { id: "aadhaar", name: "Aadhaar Card", description: "Upload a clear image of your Aadhaar card (front side)" },
-    { id: "pan", name: "PAN Card", description: "Upload a clear image of your PAN card" },
-    { id: "dl", name: "Driving License", description: "Upload a clear image of your Driving License (front side)" },
-    { id: "selfie", name: "Selfie", description: "Upload a clear image of yourself" },
-  ];
+ 
   const [loading, setLoading] = useState(false);
   const [verificationResults, setVerificationResults] = useState<{[key: string]: VerificationResult}>({});
   const currentDocument = DOCUMENT_STEPS[currentStep];
@@ -184,7 +166,10 @@ const handleSubmit = async () => {
     }
 
     // Call Gemini AI for comprehensive KYC verification
-    const geminiResult = await analyzeWithGeminiAI(documentImages, selfieImageBase64);
+    const geminiResult = await analyzeDocumentWithGemini('kyc', JSON.stringify({
+      documents: documentImages,
+      selfie: selfieImageBase64
+    }));
 
     if (geminiResult.kycStatus === 'approved') {
       // KYC Approved - Add to offline queue
@@ -238,69 +223,6 @@ const handleSubmit = async () => {
     Alert.alert("Error", "Failed to complete verification. Please try again.");
   } finally {
     setLoading(false);
-  }
-};
-
-// Gemini AI Analysis Function
-const analyzeWithGeminiAI = async (documentImages: {[key: string]: string}, selfieImage: string | null): Promise<{
-  kycStatus: 'approved' | 'rejected';
-  confidence: number;
-  faceMatchConfidence?: number;
-  rejectionReason?: string;
-  issues: string[];
-}> => {
-  try {
-    
-    
-    // Simulate processing time
-    await new Promise(resolve => setTimeout(resolve, 3000));
-
-   
-    const isApproved = Math.random() > 0.2;
-    
-    if (isApproved) {
-      return {
-        kycStatus: 'approved',
-        confidence: Math.floor(Math.random() * 20) + 80, // 80-99%
-        faceMatchConfidence: Math.floor(Math.random() * 20) + 75, // 75-94%
-        issues: []
-      };
-    } else {
-      const rejectionReasons = [
-        "Document quality issues",
-        "Face mismatch detected",
-        "Document authenticity concerns",
-        "Information inconsistency across documents",
-        "Poor selfie quality"
-      ];
-      
-      const issues = [
-        "Aadhaar document blurry",
-        "PAN card number not clear",
-        "Selfie doesn't match document photo",
-        "Driving license expired",
-        "Voter ID information incomplete"
-      ];
-
-      return {
-        kycStatus: 'rejected',
-        confidence: Math.floor(Math.random() * 40) + 30, // 30-69%
-        rejectionReason: rejectionReasons[Math.floor(Math.random() * rejectionReasons.length)],
-        issues: issues.slice(0, Math.floor(Math.random() * 3) + 1) // 1-3 issues
-      };
-    }
-
-  } catch (error) {
-    console.error('Gemini AI analysis failed:', error);
-    // Fallback to basic verification if AI fails
-    const allVerified = Object.values(verificationResults).every(result => result?.verified);
-    
-    return {
-      kycStatus: allVerified ? 'approved' : 'rejected',
-      confidence: allVerified ? 85 : 40,
-      rejectionReason: allVerified ? undefined : 'Basic verification failed',
-      issues: allVerified ? [] : ['Manual verification required']
-    };
   }
 };
 

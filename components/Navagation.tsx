@@ -1,17 +1,8 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import {  Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react-native'
-interface PROPS{
-    currentStep:number,
-    handlePrevious:()=>void,
-    handleNext:()=>void,
-    documents:{[key:string]: string | null},
-    currentDocument:{id:string,name:string,description:string},
-    isLastStep:boolean,
-    handleSubmit:()=>void,
-    allDocumentsUploaded:boolean,
-    loading?:boolean
-}
+import { PROPNAVIGATION } from '@/constants/types'
+
 const Navagation = ({ 
     currentStep,
      handlePrevious,
@@ -22,7 +13,7 @@ const Navagation = ({
       handleSubmit
     , allDocumentsUploaded,
      loading
-}:PROPS) => {
+}:PROPNAVIGATION) => {
 
     return (
    

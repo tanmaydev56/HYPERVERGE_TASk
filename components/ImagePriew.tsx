@@ -1,13 +1,8 @@
 import { Image,  Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import { Camera, Upload } from 'lucide-react-native'
-interface PROPS{
-    isSelfieStep:boolean,
-    openImagePicker:()=>void,
-    documents:{[key:string]: string | null},
-    currentDocument:{id:string,name:string,description:string}
-}
-const ImagePriew = ({isSelfieStep, openImagePicker, documents, currentDocument}:PROPS) => {
+import { PROPSIMAGEPREVIEW } from '@/constants/types'
+const ImagePriew = ({isSelfieStep, openImagePicker, documents, currentDocument}:PROPSIMAGEPREVIEW) => {
   return (
     <View>
     {documents[currentDocument.id] ? (
