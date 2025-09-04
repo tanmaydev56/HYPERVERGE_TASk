@@ -1,11 +1,17 @@
 // app/kyc/[id].tsx
-import AIHelpButton,{analyzeDocumentWithGemini, analyzeKycBundle} from "@/components/AIHelpButton";
+import AIHelpButton, { analyzeDocumentWithGemini, analyzeKycBundle } from "@/components/AIHelpButton";
+import ImagePriew from "@/components/ImagePriew";
+import Navagation from "@/components/Navagation";
+import ProgressHeader from "@/components/ProgressHeader";
+import { DOCUMENT_STEPS } from "@/constants/constant";
+import { VerificationResult } from "@/constants/types";
+import { convertImageToBase64 } from '@/lib/imageUtils';
 import { addToQueue } from "@/lib/offlineQueues";
+import { isKycApproved } from "@/lib/Verification";
 import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { isKycApproved } from "@/lib/Verification";
 import {
   Alert,
   KeyboardAvoidingView, Platform,
@@ -13,12 +19,6 @@ import {
   Text,
   View,
 } from "react-native";
-import { convertImageToBase64 } from '@/lib/imageUtils';
-import ProgressHeader from "@/components/ProgressHeader";
-import ImagePriew from "@/components/ImagePriew";
-import Navagation from "@/components/Navagation";
-import { VerificationResult } from "@/constants/types";
-import { DOCUMENT_STEPS } from "@/constants/constant";
 
 
 
@@ -173,7 +173,7 @@ const selfieResult: VerificationResult = selfieBase64
 
     /* ----- 4.  pass / fail ----- */
     if (isKycApproved([...docResults, selfieResult])) {
-      /* ---------- SUCCESS ---------- */
+    //  ----- SUCCESS ----- */
       for (const [docType, uri] of Object.entries(documents)) {
         if (!uri) continue;
         await addToQueue(docType, {
