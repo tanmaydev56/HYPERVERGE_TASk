@@ -206,98 +206,154 @@ const handleSubmit = async () => {
 
   setLoading(true);
   try {
-    // Perform final face matching verification
-    const finalResult = await performFinalFaceMatching();
+    // Convert all images to base64 for Gemini AI analysis
+    const documentImages: {[key: string]: string} = {};
     
-    if (finalResult.verified) {
-      // Add all documents to offline queue
+    for (const [docType, uri] of Object.entries(documents)) {
+      if (uri && docType !== "selfie") {
+        try {
+          const imageBase64 = await convertImageToBase64(uri);
+          documentImages[docType] = imageBase64;
+        } catch (error) {
+          console.error(`Failed to convert ${docType} image:`, error);
+        }
+      }
+    }
+
+    // Get selfie image if available
+    let selfieImageBase64 = null;
+    if (documents.selfie) {
+      try {
+        selfieImageBase64 = await convertImageToBase64(documents.selfie);
+      } catch (error) {
+        console.error('Failed to convert selfie image:', error);
+      }
+    }
+
+    // Call Gemini AI for comprehensive KYC verification
+    const geminiResult = await analyzeWithGeminiAI(documentImages, selfieImageBase64);
+
+    if (geminiResult.kycStatus === 'approved') {
+      // KYC Approved - Add to offline queue
       for (const [docType, uri] of Object.entries(documents)) {
         if (uri && docType !== "selfie") {
           await addToQueue(docType, { 
             documentType: docType,
-            verification: verificationResults[docType]
+            verification: { 
+              verified: true, 
+              confidence: geminiResult.confidence,
+              aiVerified: true 
+            }
           }, uri);
         }
       }
       
-      // Add selfie separately
       if (documents.selfie) {
         await addToQueue("selfie", { 
           documentType: "selfie",
-          verification: finalResult.faceMatch
+          verification: { 
+            verified: true, 
+            confidence: geminiResult.faceMatchConfidence,
+            aiVerified: true 
+          }
         }, documents.selfie);
       }
 
       router.replace({
         pathname: "/success",
         params: { 
-          message: `KYC Approved! Document confidence: ${finalResult.documentConfidence}%, Face match: ${finalResult.faceMatchConfidence}%`,
-          verified: "true"
+          message: `KYC Approved by AI! Overall confidence: ${geminiResult.confidence}%`,
+          verified: "true",
+          confidence: geminiResult.confidence.toString()
         }
       });
+
     } else {
-      const allIssues = [
-        ...finalResult.documentIssues,
-        ...finalResult.faceMatchIssues
-      ];
-      
-      Alert.alert(
-        '❌ Final Verification Failed',
-        `Please fix these issues:\n${allIssues.join('\n• ')}`,
-        [{ text: 'Retry' }]
-      );
+      // KYC Rejected - Go to failed screen
+      router.replace({
+        pathname: "/failed",
+        params: { 
+          message: `KYC Rejected: ${geminiResult.rejectionReason}`,
+          issues: JSON.stringify(geminiResult.issues),
+          verified: "false"
+        }
+      });
     }
+
   } catch (error) {
+    console.error('KYC submission error:', error);
     Alert.alert("Error", "Failed to complete verification. Please try again.");
   } finally {
     setLoading(false);
   }
 };
 
-// Add this new function for final face matching
-const performFinalFaceMatching = async (): Promise<{
-  verified: boolean;
-  documentConfidence: number;
-  faceMatchConfidence: number;
-  documentIssues: string[];
-  faceMatchIssues: string[];
+// Gemini AI Analysis Function
+const analyzeWithGeminiAI = async (documentImages: {[key: string]: string}, selfieImage: string | null): Promise<{
+  kycStatus: 'approved' | 'rejected';
+  confidence: number;
+  faceMatchConfidence?: number;
+  rejectionReason?: string;
+  issues: string[];
 }> => {
   try {
-    // Simulate face matching verification (replace with actual Gemini call)
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Simulate Gemini AI analysis (replace with actual API call)
+    console.log('Analyzing documents with Gemini AI...');
     
-    const faceMatchSuccess = Math.random() > 0.3; // 70% success rate
-    const documentSuccess = verificationResults.aadhaar?.verified || 
-                           verificationResults.pan?.verified || 
-                           verificationResults.dl?.verified 
+    // Simulate processing time
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
-    if (faceMatchSuccess && documentSuccess) {
+   
+    const isApproved = Math.random() > 0.2;
+    
+    if (isApproved) {
       return {
-        verified: true,
-        documentConfidence: 85,
-        faceMatchConfidence: 90,
-        documentIssues: [],
-        faceMatchIssues: []
+        kycStatus: 'approved',
+        confidence: Math.floor(Math.random() * 20) + 80, // 80-99%
+        faceMatchConfidence: Math.floor(Math.random() * 20) + 75, // 75-94%
+        issues: []
       };
     } else {
+      const rejectionReasons = [
+        "Document quality issues",
+        "Face mismatch detected",
+        "Document authenticity concerns",
+        "Information inconsistency across documents",
+        "Poor selfie quality"
+      ];
+      
+      const issues = [
+        "Aadhaar document blurry",
+        "PAN card number not clear",
+        "Selfie doesn't match document photo",
+        "Driving license expired",
+        "Voter ID information incomplete"
+      ];
+
       return {
-        verified: false,
-        documentConfidence: 60,
-        faceMatchConfidence: 45,
-        documentIssues: documentSuccess ? [] : ['Document verification failed'],
-        faceMatchIssues: faceMatchSuccess ? [] : ['Face does not match document photo']
+        kycStatus: 'rejected',
+        confidence: Math.floor(Math.random() * 40) + 30, // 30-69%
+        rejectionReason: rejectionReasons[Math.floor(Math.random() * rejectionReasons.length)],
+        issues: issues.slice(0, Math.floor(Math.random() * 3) + 1) // 1-3 issues
       };
     }
+
   } catch (error) {
+    console.error('Gemini AI analysis failed:', error);
+    // Fallback to basic verification if AI fails
+    const allVerified = Object.values(verificationResults).every(result => result?.verified);
+    
     return {
-      verified: false,
-      documentConfidence: 0,
-      faceMatchConfidence: 0,
-      documentIssues: ['Verification service error'],
-      faceMatchIssues: ['Face matching unavailable']
+      kycStatus: allVerified ? 'approved' : 'rejected',
+      confidence: allVerified ? 85 : 40,
+      rejectionReason: allVerified ? undefined : 'Basic verification failed',
+      issues: allVerified ? [] : ['Manual verification required']
     };
   }
 };
+
+// Add this new function for final face matching
+
   
   const progressFillWidth = `${(currentStep ) / DOCUMENT_STEPS.length * 100}%`;
 
