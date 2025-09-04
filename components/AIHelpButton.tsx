@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { convertImageToBase64 } from '@/lib/imageUtils';
 import { VerificationResult } from '@/constants/types';
 
-const GEMINI_API_KEY = 'AIzaSyBE8hmQE4qOXV5mSLgD8KgSrASJxpOyO60'; // ← move to .env
+const GEMINI_API_KEY = 'AIzaSyBCv18PbsBhvOtK-Z5QYfucUh9Pp0g9zCU'; // ← move to .env
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
 /* ---------- 1.  SINGLE-DOC ANALYSIS  ---------- */
@@ -13,15 +13,16 @@ export const analyzeDocumentWithGemini = async (
   docType: 'aadhaar' | 'pan' | 'dl' | 'selfie',
   imageBase64: string
 ): Promise<VerificationResult> => {
-const prompt = `You are an Indian KYC expert.  
-Check the ${docType} image quickly:
-- Is it clearly readable?
-- Are Indian names / numbers present?
-- No foreign logo, fake URL, or completely wrong layout?
+const prompt = `You are an Indian KYC validator.
+Check the ${docType} image:
+- Indian document layout (Aadhaar / PAN / DL / selfie)
+- Readable name & number / face visible
+- No foreign logos, fake URLs, completely wrong format
+Allow: minor blur, glare, masked Aadhaar, slight rotation.
+Block: obvious fake, foreign site, wrong country flag.
 
-Return ONLY JSON:
+Return **only** JSON:
 {"verified":bool,"confidence":0-100,"issues":[],"details":{"type":"${docType}","number":"...","name":"..."}}`;
-
   const res = await fetch(GEMINI_API_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -39,23 +40,36 @@ Return ONLY JSON:
 };
 
 /* ---------- 2.  MULTI-DOC + SELFIE WRAPPER  ---------- */
-export const analyzeKycBundle = async (docs: Record<string, string>, selfieB64: string | null) => {
-  const docPromises = Object.entries(docs).map(([type, b64]) =>
-    analyzeDocumentWithGemini(type as any, b64)
-  );
-  const results = await Promise.all(docPromises);
+export const analyzeKycBundle = async (
+  docs: Record<string, string>,
+  selfieB64: string | null
+) => {
+  // 1. analyse every doc
+  const docPromises = Object.entries(docs).map(async ([type, b64]) => ({
+    type,
+    result: await analyzeDocumentWithGemini(type as any, b64),
+  }));
+  const docResults = await Promise.all(docPromises);
+
+  // 2. analyse selfie
   const selfieResult = selfieB64
     ? await analyzeDocumentWithGemini('selfie', selfieB64)
     : { verified: true, confidence: 100, issues: [], details: { type: 'selfie' } };
 
-  const allOk = results.every(r => r.verified) && selfieResult.verified;
-  const avgConf = [...results, selfieResult].reduce((s, r) => s + r.confidence, 0) / (results.length + 1);
+  // 3. summary
+  const allOk = docResults.every(d => d.result.verified) && selfieResult.verified;
+  const avgConf =
+    [...docResults.map(d => d.result.confidence), selfieResult.confidence].reduce((a, b) => a + b, 0) /
+    (docResults.length + 1);
 
   return {
     kycStatus: allOk ? 'approved' : 'rejected',
     confidence: Math.round(avgConf),
     faceMatchConfidence: selfieResult.confidence,
-    issues: [...results, selfieResult].flatMap(r => r.issues),
+    issues: [...docResults, { result: selfieResult }].flatMap(d => d.result.issues),
+    // 4. individual results
+    docResults: Object.fromEntries(docResults.map(d => [d.type, d.result])),
+    selfieResult,
   };
 };
 

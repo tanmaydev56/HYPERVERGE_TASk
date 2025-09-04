@@ -66,7 +66,20 @@ export default function FailedScreen() {
           <Text key={idx} className="text-gray-700 mb-1">• {i}</Text>
         ))}
       </View>
-
+        {/* Gemini-Exact Reasons */}
+{issues.length > 0 && (
+  <View className="bg-orange-50 rounded-2xl p-5 mx-6 mb-6 border border-orange-200">
+    <Text className="text-lg font-bold text-orange-900 mb-3">
+      🧠 AI detected these problems:
+    </Text>
+    {issues.map((i: string, idx: number) => (
+      <Text key={idx} className="text-orange-800 mb-1">• {i}</Text>
+    ))}
+    <Text className="text-xs text-orange-600 mt-2">
+      Confidence: {params.confidence || 0}%
+    </Text>
+  </View>
+)}
       {/* Next steps */}
       <View className="bg-white rounded-2xl p-5 mx-6 mb-6 border border-gray-100">
         <Text className="text-lg font-bold text-gray-900 mb-3">{content.nextStepsTitle}</Text>

@@ -5,6 +5,7 @@ import * as ImageManipulator from "expo-image-manipulator";
 import * as ImagePicker from "expo-image-picker";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { isKycApproved } from "@/lib/Verification";
 import {
   Alert,
   KeyboardAvoidingView, Platform,
@@ -142,88 +143,70 @@ const openImagePicker = async () => {
 };
 const handleSubmit = async () => {
   if (!allDocumentsUploaded) {
-    Alert.alert("Incomplete", "Please upload all required documents before submitting.");
+    Alert.alert('Incomplete', 'Please upload all required documents before submitting.');
     return;
   }
 
   setLoading(true);
   try {
-    // Convert all images to base64 for Gemini AI analysis
-    const documentImages: {[key: string]: string} = {};
-    
+    /* ----- 1.  collect base64 ----- */
+    const documentImages: Record<string, string> = {};
     for (const [docType, uri] of Object.entries(documents)) {
-      if (uri && docType !== "selfie") {
-        try {
-          const imageBase64 = await convertImageToBase64(uri);
-          documentImages[docType] = imageBase64;
-        } catch (error) {
-          console.error(`Failed to convert ${docType} image:`, error);
-        }
+      if (uri && docType !== 'selfie') {
+        documentImages[docType] = await convertImageToBase64(uri);
       }
     }
+    const selfieBase64 = documents.selfie ? await convertImageToBase64(documents.selfie) : null;
 
-    // Get selfie image if available
-    let selfieImageBase64 = null;
-    if (documents.selfie) {
-      try {
-        selfieImageBase64 = await convertImageToBase64(documents.selfie);
-      } catch (error) {
-        console.error('Failed to convert selfie image:', error);
-      }
-    }
+    /* ----- 2.  Gemini bundle ----- */
+    const geminiResult = await analyzeKycBundle(documentImages, selfieBase64);
 
-    // Call Gemini AI for comprehensive KYC verification
-    const geminiResult = await analyzeKycBundle(documentImages, selfieImageBase64);
-    if (geminiResult.kycStatus === 'approved') {
-      // KYC Approved - Add to offline queue
+    /* ----- 3.  build result array for your rule ----- */
+    const docResults: VerificationResult[] = Object.entries(documentImages).map(([type, _]) =>
+      geminiResult.docResults?.[type] ?? { verified: false, confidence: 0, issues: [], details: { type } }
+    );
+    const selfieResult: VerificationResult =
+      geminiResult.selfieResult ?? { verified: false, confidence: 0, issues: [], details: { type: 'selfie' } };
+
+    /* ----- 4.  pass / fail ----- */
+    if (isKycApproved([...docResults, selfieResult])) {
+      /* ---------- SUCCESS ---------- */
       for (const [docType, uri] of Object.entries(documents)) {
-        if (uri && docType !== "selfie") {
-          await addToQueue(docType, { 
-            documentType: docType,
-            verification: { 
-              verified: true, 
-              confidence: geminiResult.confidence,
-              aiVerified: true 
-            }
-          }, uri);
-        }
-      }
-      
-      if (documents.selfie) {
-        await addToQueue("selfie", { 
-          documentType: "selfie",
-          verification: { 
-            verified: true, 
-            confidence: geminiResult.faceMatchConfidence,
-            aiVerified: true 
-          }
-        }, documents.selfie);
+        if (!uri) continue;
+        await addToQueue(docType, {
+          documentType: docType,
+          verification: {
+            verified: true,
+            confidence: docType === 'selfie' ? selfieResult.confidence : geminiResult.confidence,
+            aiVerified: true,
+          },
+        }, uri);
       }
 
       router.replace({
-        pathname: "/success",
-        params: { 
+        pathname: '/success',
+        params: {
           message: `KYC Approved by AI! Overall confidence: ${geminiResult.confidence}%`,
-          verified: "true",
-          confidence: geminiResult.confidence.toString()
-        }
+          verified: 'true',
+          confidence: geminiResult.confidence.toString(),
+        },
       });
-
     } else {
-      // KYC Rejected - Go to failed screen
+      /* ---------- FAILED ---------- */
       router.replace({
-        pathname: "/failed",
-        params: { 
-          message: `KYC Rejected: ${geminiResult.rejectionReason}`,
+        pathname: '/failed',
+        params: {
+          message: `KYC Rejected: ${geminiResult.issues.join(', ')}`,
           issues: JSON.stringify(geminiResult.issues),
-          verified: "false"
-        }
+          confidence: geminiResult.confidence.toString(),
+          details: JSON.stringify(geminiResult.details || {}),
+          verified: 'false',
+        },
       });
     }
-
   } catch (error) {
     console.error('KYC submission error:', error);
-    Alert.alert("Error", "Failed to complete verification. Please try again.");
+    Alert.alert('Error', 'Failed to complete verification. Please try again.');
   } finally {
     setLoading(false);
   }
