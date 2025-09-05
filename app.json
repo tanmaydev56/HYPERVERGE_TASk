@@ -8,8 +8,8 @@
       "appwriteDatabaseId": "68b749070002ddbb0dc2",
       "appwriteProfilesCollectionId": "profiles",
       "appwriteKycCollectionId": "kyc_requests",
-      "appwriteBucketId": "kyc_uploads",
-      "EXPO_PUBLIC_GEMINI_API_KEY":"AIzaSyB2ms0Vf7wUVj4d183RgA_bhdPjDq5snTg"
+      "appwriteBucketId": "68b74bc500018253f93b",
+      "EXPO_PUBLIC_GEMINI_API_KEY":"AIzaSyBTGvXLj6bha80X0K7zAsDleU4qI0fDOd8"
       
     },
     "version": "1.0.0",
