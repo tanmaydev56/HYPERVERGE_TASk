@@ -236,3 +236,4 @@ export default function DocumentCollectionScreen() {
     </KeyboardAvoidingView>
   );
 }
+// this is the id page
