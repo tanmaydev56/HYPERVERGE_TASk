@@ -9,7 +9,7 @@ import { VerificationResult } from '@/constants/types';
 const extra = (Constants.expoConfig as any)?.extra ?? {};
 const GEMINI_API_KEY = extra.EXPO_PUBLIC_GEMINI_API_KEY;
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-/* ---------- 1.  SINGLE-DOC ANALYSIS  ---------- */
+
 export const analyzeDocumentWithGemini = async (
   docType: 'aadhaar' | 'pan' | 'dl' | 'selfie',
   imageBase64: string
@@ -74,7 +74,6 @@ export const analyzeKycBundle = async (
   };
 };
 
-/* ---------- 3.  UI BUTTON  ---------- */
 export default function AIHelpButton({ documentUri, onVerificationComplete }: {
   documentUri?: string | null;
   onVerificationComplete?: (result: VerificationResult) => void;

@@ -12,7 +12,6 @@ export default function FaceLivenessCamera({ onCapture }: PropsCAMERA) {
   const cameraRef = useRef<CameraView>(null);
   const [permission, requestPermission] = useCameraPermissions();
 
-  /* ---------- Permission gate ---------- */
   if (!permission) return <Text className="text-center mt-10">Loading…</Text>;
   if (!permission.granted) {
     return (
@@ -28,20 +27,20 @@ export default function FaceLivenessCamera({ onCapture }: PropsCAMERA) {
     );
   }
 
-  /* ---------- Capture & compress ---------- */
+  
   const takeSelfie = async () => {
     try {
       const photo = await cameraRef.current?.takePictureAsync({ quality: 0.7 });
       if (!photo) return;
 
-      // Resize + compress
+     
       const compressed = await ImageManipulator.manipulateAsync(
         photo.uri,
         [{ resize: { width: 640 } }],
         { compress: 0.6, format: ImageManipulator.SaveFormat.JPEG }
       );
 
-      // Ensure ≤ 250 kB
+      
       const { size } = await FileSystem.getInfoAsync(compressed.uri);
       if (size && size > 250 * 1024) {
         const extra = await ImageManipulator.manipulateAsync(
@@ -58,7 +57,7 @@ export default function FaceLivenessCamera({ onCapture }: PropsCAMERA) {
     }
   };
 
-  /* ---------- Render ---------- */
+
   return (
     <View className="flex-1 bg-black">
       <CameraView
@@ -66,7 +65,7 @@ export default function FaceLivenessCamera({ onCapture }: PropsCAMERA) {
         className="flex-1"
         facing="front"
       >
-        {/* Shutter button */}
+        
         <View className="absolute bottom-10 w-full items-center">
           <TouchableOpacity
             className="bg-primary rounded-full w-20 h-20 items-center justify-center"

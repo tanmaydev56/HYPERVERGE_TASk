@@ -13,7 +13,7 @@ const ProgressHeader = ({currentStep,DOCUMENT_STEPS,currentDocument,progressFill
               {currentDocument.name}
             </Text>
             
-            {/* Progress Bar */}
+           
             <View className="bg-white/30 rounded-full h-2 mb-2">
         <View
           className="bg-green-500 rounded-full h-2 "

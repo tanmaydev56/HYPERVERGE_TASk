@@ -54,6 +54,7 @@ const DigiLockerScreen = () => {
             onPress={openDigiLockerWeb}
             className="flex-row items-center justify-between bg-white p-4 rounded-xl border border-gray-200 mb-3"
           >
+           
             <View className="flex-row items-center">
               <Download size={20} color="#1D4ED8" />
               <Text className="ml-3 text-gray-700">Download DigiLocker App</Text>
